@@ -72,7 +72,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setStatsLoading(true);
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/stats', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setParticipantsLoading(true);
     try {
-      const res = await fetch(`https://designthon-backend.vercel.app/api/admin/participants?search=${participantSearch}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/participants?search=${participantSearch}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setCouponsLoading(true);
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/coupons', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/coupons', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setTeamsLoading(true);
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/teams', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/teams', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
   // Check-in Manual trigger
   const handleCheckIn = async (userId: string) => {
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/check-in', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/check-in', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   // Toggle Coupon active state
   const handleToggleCoupon = async (couponId: string) => {
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/coupons/toggle', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/coupons/toggle', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export default function AdminDashboard() {
   const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/coupons/create', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/coupons/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
     if (!confirm(`Dissolve team "${teamName}"? Members will be reset to individual state.`)) return;
 
     try {
-      const res = await fetch(`https://designthon-backend.vercel.app/api/admin/teams/${teamId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/teams/${teamId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/teams/merge', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/teams/merge', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -326,7 +326,7 @@ export default function AdminDashboard() {
     setBroadcastLoading(true);
 
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/admin/notifications/send', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/notifications/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -583,7 +583,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <a
-                  href="https://designthon-backend.vercel.app/api/admin/export-csv"
+                  href={process.env.NEXT_PUBLIC_API_URL + '/api/admin/export-csv'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"

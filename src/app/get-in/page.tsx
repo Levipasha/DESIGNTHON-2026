@@ -31,7 +31,7 @@ function CreateTeamTab({ token, onCreated }: { token: string; onCreated: () => v
     if (!name.trim()) return;
     setLoading(true); setError('');
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/teams/create', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/teams/create', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), description: desc.trim() }),
@@ -127,7 +127,7 @@ function JoinTeamTab({ token, userId }: { token: string; userId: string }) {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       params.append('slotsAvailable', 'true');
-      const res = await fetch(`https://designthon-backend.vercel.app/api/public/teams?${params}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/teams?${params}`);
       if (res.ok) {
         const list: PublicTeam[] = await res.json();
         setTeams(list);
@@ -150,7 +150,7 @@ function JoinTeamTab({ token, userId }: { token: string; userId: string }) {
   const sendRequest = async (team: PublicTeam) => {
     setSending(p => ({ ...p, [team.id]: true }));
     try {
-      const res = await fetch('https://designthon-backend.vercel.app/api/teams/join-request', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/teams/join-request', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId: team.id }),

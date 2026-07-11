@@ -44,7 +44,7 @@ export default function TeamsPage() {
   useEffect(() => {
     const fetchColleges = async () => {
       try {
-        const res = await fetch('https://designthon-backend.vercel.app/api/public/colleges');
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/public/colleges');
         if (res.ok) {
           const list = await res.json();
           setColleges(list);
@@ -66,7 +66,7 @@ export default function TeamsPage() {
       if (slotsOnly) params.append('slotsAvailable', 'true');
       params.append('sort', sortOrder);
 
-      const res = await fetch(`https://designthon-backend.vercel.app/api/public/teams?${params.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/teams?${params.toString()}`);
       if (res.ok) {
         const list = await res.json();
         setTeams(list);
@@ -113,7 +113,7 @@ export default function TeamsPage() {
 
     try {
       const savedToken = localStorage.getItem('designthon_token');
-      const res = await fetch('https://designthon-backend.vercel.app/api/teams/join-request', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/teams/join-request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
