@@ -61,7 +61,7 @@ function RegisterForm() {
     if (!couponCode) return;
     setCouponError('');
     try {
-      const res = await fetch('http://localhost:5000/api/coupons/validate', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode, college: formData.college })
@@ -89,7 +89,7 @@ function RegisterForm() {
 
     try {
       // 1. Create/Verify User account first
-      const signupRes = await fetch('http://localhost:5000/api/auth/otp-verify', {
+      const signupRes = await fetch('https://designthon-backend.vercel.app/api/auth/otp-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +115,7 @@ function RegisterForm() {
 
       // 2. Create Razorpay order
       const activeToken = verifiedUserToken || localStorage.getItem('designthon_token');
-      const orderRes = await fetch('http://localhost:5000/api/payments/create-order', {
+      const orderRes = await fetch('https://designthon-backend.vercel.app/api/payments/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ function RegisterForm() {
     const finalAmount = appliedCoupon ? appliedCoupon.finalPrice : 750;
 
     try {
-      const verifyRes = await fetch('http://localhost:5000/api/payments/verify', {
+      const verifyRes = await fetch('https://designthon-backend.vercel.app/api/payments/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

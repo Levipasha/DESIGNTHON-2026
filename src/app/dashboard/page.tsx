@@ -63,7 +63,7 @@ export default function UserDashboard() {
     }
     setTeamLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/teams/my-team', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/my-team', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -83,7 +83,7 @@ export default function UserDashboard() {
   const fetchAnnouncements = async () => {
     if (!user) return;
     try {
-      const res = await fetch('http://localhost:5000/api/notifications', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/notifications', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -111,7 +111,7 @@ export default function UserDashboard() {
   const fetchPendingInvites = async () => {
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:5000/api/teams/my-invites', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/my-invites', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setPendingInvites(await res.json());
@@ -124,7 +124,7 @@ export default function UserDashboard() {
     if (!inviteEmail.trim()) return;
     setInviteSending(true); setInviteMsg(null);
     try {
-      const res = await fetch('http://localhost:5000/api/teams/invite', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/invite', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteeEmail: inviteEmail.trim().toLowerCase() }),
@@ -140,7 +140,7 @@ export default function UserDashboard() {
   const handleInviteRespond = async (inviteId: string, action: 'accept' | 'reject') => {
     setRespondingInvite(inviteId);
     try {
-      const res = await fetch('http://localhost:5000/api/teams/invite-respond', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/invite-respond', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteId, action }),
@@ -203,7 +203,7 @@ export default function UserDashboard() {
     setCreatingTeam(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/teams/create', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ export default function UserDashboard() {
   // Respond to join request (Accept / Reject)
   const handleRespondRequest = async (requestUserId: string, status: 'approved' | 'rejected') => {
     try {
-      const res = await fetch('http://localhost:5000/api/teams/respond-request', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/respond-request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ export default function UserDashboard() {
     if (!confirm(confirmMsg)) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/teams/remove-member', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/teams/remove-member', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

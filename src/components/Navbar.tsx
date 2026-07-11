@@ -89,7 +89,7 @@ export default function Navbar() {
     const fetchNotifications = async () => {
       try {
         const savedToken = localStorage.getItem('designthon_token');
-        const res = await fetch('http://localhost:5000/api/notifications', {
+        const res = await fetch('https://designthon-backend.vercel.app/api/notifications', {
           headers: {
             Authorization: `Bearer ${savedToken}`,
           },
@@ -169,7 +169,7 @@ export default function Navbar() {
   const markAsRead = async (notifId: string) => {
     try {
       const savedToken = localStorage.getItem('designthon_token');
-      const res = await fetch('http://localhost:5000/api/notifications/read', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/notifications/read', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

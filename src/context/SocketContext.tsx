@@ -57,7 +57,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const fetchNotifications = async () => {
       try {
         const token = localStorage.getItem('designthon_token');
-        const res = await fetch('http://localhost:5000/api/notifications', {
+        const res = await fetch('https://designthon-backend.vercel.app/api/notifications', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -86,7 +86,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // Connect to Socket server
-    const socketInstance = io('http://localhost:5000', {
+    const socketInstance = io('https://designthon-backend.vercel.app', {
       withCredentials: true,
       transports: ['websocket', 'polling']
     });

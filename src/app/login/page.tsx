@@ -50,7 +50,7 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/google-login', {
+      const res = await fetch('https://designthon-backend.vercel.app/api/auth/google-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
