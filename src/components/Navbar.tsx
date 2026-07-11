@@ -43,7 +43,6 @@ export default function Navbar() {
     { label: 'Home', href: '/' },
     { label: 'Public Teams', href: '/teams' },
     ...(user ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
-    ...(isAdmin ? [{ label: 'Admin', href: '/admin' }] : []),
   ];
 
   // Helper to match active tab index
@@ -395,18 +394,7 @@ export default function Navbar() {
               Dashboard
             </Link>
           )}
-          {isAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 text-white bg-white/5 border border-white/10 ${
-                pathname.startsWith('/admin') ? 'bg-white/10 text-white' : ''
-              }`}
-            >
-              <Shield className="h-4.5 w-4.5" />
-              Admin Panel
-            </Link>
-          )}
+
 
           {user ? (
             <div className="border-t border-white/5 pt-3 mt-1 flex flex-col gap-2">

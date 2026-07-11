@@ -890,7 +890,7 @@ export default function UserDashboard() {
                 <div className="flex justify-between items-center text-left">
                   <div>
                     <p className="text-[9px] text-zinc-500 uppercase">Amount Paid</p>
-                    <p className="text-2xl font-extrabold text-white font-mono">₹{user.amountPaid || '750'}</p>
+                    <p className="text-2xl font-extrabold text-white font-mono">₹{user.amountPaid || '1000'}</p>
                   </div>
                   {/* Event Check-in QR */}
                   <div className="h-20 w-20 bg-white p-1 rounded-xl shadow-lg border border-white/5">

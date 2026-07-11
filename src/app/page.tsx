@@ -96,7 +96,7 @@ const INCLUSIONS = [
 const FAQS = [
   { q: 'Can I participate individually?', a: 'Yes. Register individually first and then log in to create or join a team.' },
   { q: 'How many members are allowed?', a: 'Teams must consist of 3-4 members.' },
-  { q: 'Is the payment individual?', a: 'Yes. Every participant pays ₹750 separately. Every member must complete individual registration and payment before joining or creating a team.' },
+  { q: 'Is the payment individual?', a: 'Yes. Every participant pays ₹1000 separately. Every member must complete individual registration and payment before joining or creating a team.' },
   { q: 'Can I join a team after registering?', a: 'Yes. You can search for teams, enter a Team ID, or open an invite link.' },
   { q: 'Will certificates be provided?', a: 'Yes. Every participant receives a participation certificate.' },
   { q: 'Are beginners allowed?', a: 'Absolutely. Students from all skill levels and branches are welcome to learn and participate.' },
@@ -222,32 +222,32 @@ export default function LandingPage() {
             {/* Event Quick Info Cards */}
             <div className="pt-8 border-t border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="group flex items-center gap-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all duration-300 hover:bg-white/[0.04] hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 text-left">
-                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors">
+                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <Calendar className="h-5 w-5" />
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold block">Date</span>
-                  <span className="text-sm font-bold text-white mt-0.5 block">12–13 Sept '26</span>
+                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Date:</span>
+                  <span className="text-sm font-bold text-white">12–13 Sept '26</span>
                 </div>
               </div>
 
               <div className="group flex items-center gap-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all duration-300 hover:bg-white/[0.04] hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 text-left">
-                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors">
+                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <MapPin className="h-5 w-5" />
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold block">Venue</span>
-                  <span className="text-sm font-bold text-white mt-0.5 block">Cohort, Hyd</span>
+                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Venue:</span>
+                  <span className="text-sm font-bold text-white">Cohort, Hyd</span>
                 </div>
               </div>
 
               <div className="group flex items-center gap-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all duration-300 hover:bg-white/[0.04] hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 text-left">
-                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors">
+                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <Ticket className="h-5 w-5" />
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold block">Registration</span>
-                  <span className="text-sm font-bold text-white mt-0.5 block">₹750 / student</span>
+                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Registration:</span>
+                  <span className="text-sm font-bold text-white">₹1000 / student</span>
                 </div>
               </div>
             </div>
@@ -526,7 +526,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 max-w-5xl mx-auto text-left">
           {[
             { step: '1', title: 'Complete Registration', desc: 'Fill individual registration form.' },
-            { step: '2', title: 'Pay Registration Fee', desc: 'Pay ₹750 individual student fee.' },
+            { step: '2', title: 'Pay Registration Fee', desc: 'Pay ₹1000 individual student fee.' },
             { step: '3', title: 'Create or Join Team', desc: 'Form team of 3-4 members.' },
             { step: '4', title: 'Confirmation Receipt', desc: 'Download payment receipt pdf.' },
             { step: '5', title: 'Participate in Event', desc: 'Design prototypes at venue.' },

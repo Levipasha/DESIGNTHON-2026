@@ -16,7 +16,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (user) {
       if (user.role === 'admin') {
-        router.push('/admin');
+        router.push('/dashboard');
       } else if (user.paymentStatus !== 'paid') {
         router.push('/register');
       } else if (!user.teamId) {
@@ -67,12 +67,14 @@ export default function LoginPage() {
         login(data.token, data.user);
         setMessage({ text: 'Welcome back! Redirecting…', type: 'success' });
         setTimeout(() => {
-          const destination = data.user.role === 'admin'
-            ? '/admin'
-            : (data.user.paymentStatus !== 'paid'
+          if (data.user.role === 'admin') {
+            router.push('/dashboard');
+          } else {
+            const destination = data.user.paymentStatus !== 'paid'
               ? '/register'
-              : (!data.user.teamId ? '/get-in' : '/dashboard'));
-          router.push(destination);
+              : (!data.user.teamId ? '/get-in' : '/dashboard');
+            router.push(destination);
+          }
         }, 1000);
       } else {
         setMessage({ text: data.message || 'Google authentication failed.', type: 'error' });
@@ -144,13 +146,8 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Continue with Google'}
           </button>
 
-          {/* Divider note */}
           <p className="text-[10px] text-zinc-650 text-center mt-5 leading-relaxed">
-            New to DESIGNTHON? Google sign-in will guide you through registration.<br />
-            Admin panel is at{' '}
-            <a href="http://localhost:5173" target="_blank" className="text-zinc-500 hover:text-white transition-colors underline underline-offset-2">
-              localhost:5173
-            </a>
+            New to DESIGNTHON? Google sign-in will guide you through registration.
           </p>
         </div>
 

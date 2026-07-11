@@ -99,7 +99,7 @@ function RegisterForm() {
     setErrorMsg('');
     setLoading(true);
 
-    const price = appliedCoupon ? appliedCoupon.finalPrice : 750;
+    const price = appliedCoupon ? appliedCoupon.finalPrice : 1000;
 
     try {
       // 1. Create/Verify User account first
@@ -197,7 +197,7 @@ function RegisterForm() {
     setErrorMsg('');
 
     const tokenToUse = localStorage.getItem('designthon_token');
-    const finalAmount = appliedCoupon ? appliedCoupon.finalPrice : 750;
+    const finalAmount = appliedCoupon ? appliedCoupon.finalPrice : 1000;
 
     try {
       const verifyRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/payments/verify', {
@@ -228,7 +228,7 @@ function RegisterForm() {
           date: new Date().toLocaleDateString(),
           amount: finalAmount,
           couponUsed: appliedCoupon?.code || 'None',
-          discount: appliedCoupon ? (750 - appliedCoupon.finalPrice) : 0,
+          discount: appliedCoupon ? (1000 - appliedCoupon.finalPrice) : 0,
           paymentId: verifyData.user.paymentId,
         });
 
@@ -271,7 +271,7 @@ function RegisterForm() {
                 Step 1: Individual Registration Details
               </div>
               <h1 className="text-2xl font-bold text-white tracking-tight">DESIGNTHON 2026 Registration</h1>
-              <p className="text-xs text-zinc-500 mt-1">₹750 entry fee per student. Teams will be created after payment.</p>
+              <p className="text-xs text-zinc-500 mt-1">₹1000 entry fee per student. Teams will be created after payment.</p>
             </div>
 
             {errorMsg && (
@@ -413,7 +413,7 @@ function RegisterForm() {
               <div className="border-t border-white/5 pt-4 flex flex-col gap-2 text-xs">
                 <div className="flex justify-between text-zinc-400">
                   <span>Standard Registration Fee</span>
-                  <span>₹750</span>
+                  <span>₹1000</span>
                 </div>
                 {appliedCoupon && (
                   <div className="flex justify-between text-emerald-400">
@@ -423,7 +423,7 @@ function RegisterForm() {
                 )}
                 <div className="flex justify-between font-bold text-white text-sm border-t border-white/5 pt-2">
                   <span>Grand Total to Pay</span>
-                  <span className="text-gradient">₹{appliedCoupon ? appliedCoupon.finalPrice : 750}</span>
+                  <span className="text-gradient">₹{appliedCoupon ? appliedCoupon.finalPrice : 1000}</span>
                 </div>
               </div>
 
