@@ -1,0 +1,166 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
+import { ShieldAlert, CheckCircle2, Loader } from 'lucide-react';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../../config/firebase';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { login, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        router.push('/admin');
+      } else if (user.paymentStatus !== 'paid') {
+        router.push('/register');
+      } else if (!user.teamId) {
+        router.push('/get-in');
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  }, [user, router]);
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      await triggerFirebaseLogin(idToken);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setMessage({ text: 'Sign-in popup closed before completion.', type: 'error' });
+      } else {
+        setMessage({ text: err.message || 'Google authentication failed.', type: 'error' });
+      }
+      setLoading(false);
+    }
+  };
+
+  const triggerFirebaseLogin = async (idToken: string) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 202) {
+        setMessage({ text: 'Google account verified! Redirecting to complete registration…', type: 'success' });
+        setTimeout(() => {
+          router.push(`/register?email=${encodeURIComponent(data.email)}&name=${encodeURIComponent(data.name)}`);
+        }, 1200);
+      } else if (res.ok && data.token && data.user) {
+        login(data.token, data.user);
+        setMessage({ text: 'Welcome back! Redirecting…', type: 'success' });
+        setTimeout(() => {
+          const destination = data.user.role === 'admin'
+            ? '/admin'
+            : (data.user.paymentStatus !== 'paid'
+              ? '/register'
+              : (!data.user.teamId ? '/get-in' : '/dashboard'));
+          router.push(destination);
+        }, 1000);
+      } else {
+        setMessage({ text: data.message || 'Google authentication failed.', type: 'error' });
+      }
+    } catch {
+      setMessage({ text: 'Could not connect to server. Is the backend running?', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 w-full bg-[#050505] relative overflow-hidden bg-grid flex items-center justify-center min-h-screen px-4">
+      {/* subtle radial light */}
+      <div className="absolute inset-0 bg-gradient-radial from-white/[0.01] to-transparent pointer-events-none" />
+
+      <div className="w-full max-w-sm relative">
+        {/* Card */}
+        <div className="bg-[#0c0c0c] border border-zinc-800/80 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+          {/* Top aesthetic accent line */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+
+          {/* Logo mark */}
+          <div className="flex justify-center mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg">
+              <span className="text-black font-black text-lg tracking-tighter">D</span>
+            </div>
+          </div>
+
+          {/* Heading */}
+          <div className="text-center mb-8">
+            <h1 className="text-xl font-bold text-white tracking-tight">Sign in to DESIGNTHON</h1>
+            <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+              Use your Google account to access your dashboard,<br />register, and manage your team.
+            </p>
+          </div>
+
+          {/* Alert */}
+          {message && (
+            <div className={`p-3 rounded-xl border text-xs leading-relaxed mb-5 flex gap-2.5 items-start ${
+              message.type === 'success'
+                ? 'bg-zinc-900 border-zinc-700 text-zinc-300'
+                : 'bg-rose-950/20 border-rose-500/30 text-rose-300'
+            }`}>
+              {message.type === 'success'
+                ? <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-zinc-400 mt-0.5" />
+                : <ShieldAlert className="h-4 w-4 flex-shrink-0 text-rose-400 mt-0.5" />}
+              <span>{message.text}</span>
+            </div>
+          )}
+
+          {/* Google Button */}
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-200 text-black font-bold text-sm transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 shadow-lg active:scale-[0.98]"
+          >
+            {loading ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              /* Google G logo SVG */
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                <path d="M47.532 24.552c0-1.636-.132-3.2-.388-4.704H24v9.192h13.22c-.584 3.024-2.3 5.588-4.872 7.316v6.024h7.876c4.612-4.248 7.308-10.52 7.308-17.828z" fill="#4285F4"/>
+                <path d="M24 48c6.612 0 12.168-2.196 16.224-5.948l-7.876-6.024c-2.196 1.468-4.996 2.34-8.348 2.34-6.42 0-11.856-4.336-13.796-10.16H2.044v6.22C6.084 42.864 14.452 48 24 48z" fill="#34A853"/>
+                <path d="M10.204 28.208A14.46 14.46 0 0 1 9.6 24c0-1.46.252-2.876.604-4.208V13.572H2.044A23.988 23.988 0 0 0 0 24c0 3.876.936 7.548 2.044 10.428l8.16-6.22z" fill="#FBBC05"/>
+                <path d="M24 9.636c3.62 0 6.868 1.244 9.42 3.676l7.02-7.02C36.168 2.392 30.612 0 24 0 14.452 0 6.084 5.136 2.044 13.572l8.16 6.22C12.144 13.972 17.58 9.636 24 9.636z" fill="#EA4335"/>
+              </svg>
+            )}
+            {loading ? 'Signing in…' : 'Continue with Google'}
+          </button>
+
+          {/* Divider note */}
+          <p className="text-[10px] text-zinc-650 text-center mt-5 leading-relaxed">
+            New to DESIGNTHON? Google sign-in will guide you through registration.<br />
+            Admin panel is at{' '}
+            <a href="http://localhost:5173" target="_blank" className="text-zinc-500 hover:text-white transition-colors underline underline-offset-2">
+              localhost:5173
+            </a>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-[10px] text-zinc-700 mt-6">
+          DESIGNTHON 2026 · Hyderabad's First UI/UX Hackathon
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
