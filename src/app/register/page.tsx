@@ -4,6 +4,20 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, User, Mail, Phone, School, BookOpen, Calendar, Eye, Globe, Ticket, CreditCard, CheckCircle2, ShieldAlert, Download, Plus, Search, ArrowRight } from 'lucide-react';
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 function RegisterForm() {
   const router = useRouter();
@@ -127,26 +141,58 @@ function RegisterForm() {
       const orderData = await orderRes.json();
       if (orderRes.ok) {
         setCreatedOrder(orderData);
-        setPaymentStep('razorpay');
+
+        const isScriptLoaded = await loadRazorpayScript();
+        if (!isScriptLoaded) {
+          setErrorMsg('Failed to load Razorpay SDK. Please check your internet connection.');
+          setLoading(false);
+          return;
+        }
+
+        const options = {
+          key: 'rzp_live_TCCObXZRQiSVV7',
+          amount: orderData.amount,
+          currency: orderData.currency || 'INR',
+          name: 'DESIGNTHON 2026',
+          description: 'Registration Fee',
+          order_id: orderData.id,
+          handler: async function (response: any) {
+            await handleRealPaymentVerify(response);
+          },
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.phone
+          },
+          theme: {
+            color: '#7c3aed'
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       } else {
         setErrorMsg(orderData.message || 'Failed to create payment order.');
+        setLoading(false);
       }
     } catch (err) {
       console.error(err);
       setErrorMsg('Server connection error. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Complete Simulated Razorpay payment
-  const handlePaymentAuthorize = async (status: 'success' | 'failed') => {
-    if (status === 'failed') {
-      setErrorMsg('Payment was declined by cardholder/bank simulation.');
-      setPaymentStep('form');
-      return;
-    }
-
+  // Step 2: Complete Real Razorpay payment verification
+  const handleRealPaymentVerify = async (response: {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+  }) => {
     setLoading(true);
     setErrorMsg('');
 
@@ -161,8 +207,9 @@ function RegisterForm() {
           Authorization: `Bearer ${tokenToUse}`
         },
         body: JSON.stringify({
-          razorpay_payment_id: `pay_${Math.random().toString(36).substring(2, 14)}`,
-          razorpay_order_id: createdOrder?.id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
           couponCode: appliedCoupon?.code || undefined,
           amount: finalAmount
         })
@@ -390,66 +437,6 @@ function RegisterForm() {
               </button>
             </form>
           </>
-        )}
-
-        {/* --- STEP 2: SIMULATED RAZORPAY MODAL --- */}
-        {paymentStep === 'razorpay' && createdOrder && (
-          <div className="py-6 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-400 mb-6">
-              <CreditCard className="h-8 w-8 animate-pulse" />
-            </div>
-
-            <h2 className="text-xl font-bold text-white mb-2">Simulated Razorpay Checkout</h2>
-            <p className="text-xs text-zinc-500 text-center max-w-sm mb-6">
-              This is a sandbox simulator wrapper mimicking Razorpay checkout integrations. Pick your transaction status:
-            </p>
-
-            {/* Simulated Razorpay Overlay UI */}
-            <div className="w-full max-w-md border border-white/10 rounded-2xl bg-[#090919]/90 shadow-2xl p-6 relative overflow-hidden text-left mb-8">
-              <div className="absolute top-0 right-0 bg-purple-600/10 border-b border-l border-purple-500/20 text-purple-400 text-[10px] font-mono px-3 py-1 font-bold">
-                SANDBOX
-              </div>
-              <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
-                <div>
-                  <h3 className="text-sm font-bold text-white">DESIGNTHON Registration</h3>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Order Ref: {createdOrder.id}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-zinc-500 uppercase">Amount Due</p>
-                  <p className="text-base font-extrabold text-white font-mono">₹{createdOrder.amount / 100}</p>
-                </div>
-              </div>
-
-              {/* simulated options */}
-              <div className="space-y-3">
-                <button
-                  onClick={() => handlePaymentAuthorize('success')}
-                  disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  ✓ Simulate Successful Payment
-                </button>
-                <button
-                  onClick={() => handlePaymentAuthorize('failed')}
-                  disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  ✕ Simulate Declined Transaction
-                </button>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 justify-center text-xxs text-zinc-600">
-                <span>Secure payment gateway integration simulated in sandbox mode.</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setPaymentStep('form')}
-              className="text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer"
-            >
-              Cancel Payment & Return to Form
-            </button>
-          </div>
         )}
 
         {/* --- STEP 3: PAYMENT SUCCESS / RECEIPT --- */}
