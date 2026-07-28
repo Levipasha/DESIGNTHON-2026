@@ -65,6 +65,11 @@ function RegisterForm() {
     }
   }, [user, router]);
 
+  // Proactively load Razorpay checkout script on page mount to reduce latency
+  useEffect(() => {
+    loadRazorpayScript();
+  }, []);
+
   // Handle Input Changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
@@ -142,7 +147,9 @@ function RegisterForm() {
       if (orderRes.ok) {
         setCreatedOrder(orderData);
 
-        const isScriptLoaded = await loadRazorpayScript();
+        const isScriptLoaded = typeof window !== 'undefined' && (window as any).Razorpay
+          ? true
+          : await loadRazorpayScript();
         if (!isScriptLoaded) {
           setErrorMsg('Failed to load Razorpay SDK. Please check your internet connection.');
           setLoading(false);
