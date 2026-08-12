@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, Award, Users, ShieldAlert, Sparkles, MessageSquare, ArrowRight, CheckCircle2, ChevronDown, Trophy, Clock, Cpu, BookOpen, Layers, Check, Ticket } from 'lucide-react';
+import { Calendar, MapPin, Award, Users, ShieldAlert, Sparkles, MessageSquare, ArrowRight, CheckCircle2, ChevronDown, Trophy, Clock, Cpu, BookOpen, Layers, Check, Ticket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CoverflowCarousel } from '@/components/ui/coverflow-carousel';
 
 const PRIZE_TIERS = [
   {
@@ -100,6 +101,14 @@ const FAQS = [
   { q: 'Can I join a team after registering?', a: 'Yes. You can search for teams, enter a Team ID, or open an invite link.' },
   { q: 'Will certificates be provided?', a: 'Yes. Every participant receives a participation certificate.' },
   { q: 'Are beginners allowed?', a: 'Absolutely. Students from all skill levels and branches are welcome to learn and participate.' },
+];
+
+const SLIDESHOW_IMAGES = [
+  { src: '/slideshow-1.jpg', alt: 'National Level Hackathon Nellore 1' },
+  { src: '/slideshow-2.jpg', alt: 'National Level Hackathon Nellore 2' },
+  { src: '/slideshow-3.jpg', alt: 'National Level Hackathon Nellore 3' },
+  { src: '/slideshow-4.jpg', alt: 'National Level Hackathon Nellore 4' },
+  { src: '/slideshow-5.jpg', alt: 'National Level Hackathon Nellore 5' }
 ];
 
 export default function LandingPage() {
@@ -280,16 +289,38 @@ export default function LandingPage() {
       </section>
 
       {/* Countdown Ticker Section */}
-      <section className="py-12 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm">
+      <section className="py-16 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">Hacking Starts In</p>
-          <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto">
+          <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto mb-12">
             {Object.entries(timeLeft).map(([label, value]) => (
               <div key={label} className="flex flex-col items-center p-3 rounded-xl bg-[#08081a]/60 border border-white/5 shadow-inner">
                 <span className="text-2xl sm:text-4xl font-extrabold text-white font-mono">{String(value).padStart(2, '0')}</span>
                 <span className="text-[10px] text-zinc-500 capitalize mt-1 font-semibold">{label}</span>
               </div>
             ))}
+          </div>
+
+          {/* Slideshow (Coverflow Carousel) */}
+          <div className="max-w-4xl mx-auto mb-8 relative">
+            <CoverflowCarousel
+              slides={SLIDESHOW_IMAGES}
+              showNavigation
+              showPagination
+              cardWidth="clamp(250px, 35vw, 360px)"
+              autoPlay={true}
+              autoPlayInterval={2000}
+              className="py-6"
+              cardClassName="border border-white/10 hover:border-white/20 transition-all duration-300 shadow-2xl"
+            />
+          </div>
+
+          {/* National Level Hackathon Info Text */}
+          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-xs sm:text-sm font-semibold text-zinc-300 tracking-wide">
+              Conducted National Level Hackathon on 8/08/2026 at Nellore
+            </p>
           </div>
         </div>
       </section>

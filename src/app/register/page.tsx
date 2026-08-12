@@ -49,7 +49,7 @@ function RegisterForm() {
   const [errorMsg, setErrorMsg] = useState('');
   
   // Payment states
-  const [paymentStep, setPaymentStep] = useState<'form' | 'razorpay' | 'success'>('form');
+  const [paymentStep, setPaymentStep] = useState<'form' | 'verifying' | 'success'>('form');
   const [createdOrder, setCreatedOrder] = useState<any>(null);
   const [paidUser, setPaidUser] = useState<any>(null);
   const [receiptDetails, setReceiptDetails] = useState<any>(null);
@@ -201,10 +201,12 @@ function RegisterForm() {
     razorpay_signature: string;
   }) => {
     setLoading(true);
+    setPaymentStep('verifying');
     setErrorMsg('');
 
     const tokenToUse = localStorage.getItem('designthon_token');
     const finalAmount = appliedCoupon ? appliedCoupon.finalPrice : 1000;
+    const startTime = Date.now();
 
     try {
       const verifyRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/payments/verify', {
@@ -241,6 +243,15 @@ function RegisterForm() {
 
         // Refresh user context profile
         await refreshUser();
+
+        // Enforce minimum 3-second delay to ensure processing visual feedback
+        const elapsedTime = Date.now() - startTime;
+        const minimumWait = 3000;
+        const remainingWait = Math.max(0, minimumWait - elapsedTime);
+        if (remainingWait > 0) {
+          await new Promise(resolve => setTimeout(resolve, remainingWait));
+        }
+
         setPaymentStep('success');
       } else {
         setErrorMsg(verifyData.message || 'Payment verification failed.');
@@ -296,7 +307,7 @@ function RegisterForm() {
                   <label htmlFor="name" className="block text-xs font-semibold text-zinc-400 mb-1.5 pl-1 uppercase">Full Name</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500"><User className="h-4 w-4" /></span>
-                    <input id="name" type="text" required placeholder="John Doe" value={formData.name} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
+                    <input id="name" type="text" required placeholder="Aarav Sharma" value={formData.name} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
                   </div>
                 </div>
 
@@ -305,7 +316,7 @@ function RegisterForm() {
                   <label htmlFor="email" className="block text-xs font-semibold text-zinc-400 mb-1.5 pl-1 uppercase">Email Address</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500"><Mail className="h-4 w-4" /></span>
-                    <input id="email" type="email" required placeholder="john@college.edu" value={formData.email} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
+                    <input id="email" type="email" required placeholder="aarav@college.edu" value={formData.email} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
                   </div>
                 </div>
 
@@ -369,7 +380,7 @@ function RegisterForm() {
                   <label htmlFor="linkedin" className="block text-xs font-semibold text-zinc-400 mb-1.5 pl-1 uppercase">LinkedIn URL</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500"><Globe className="h-4 w-4" /></span>
-                    <input id="linkedin" type="url" required placeholder="https://linkedin.com/in/username" value={formData.linkedin} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
+                    <input id="linkedin" type="url" required placeholder="https://linkedin.com/in/aaravsharma" value={formData.linkedin} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
                   </div>
                 </div>
               </div>
@@ -379,7 +390,7 @@ function RegisterForm() {
                 <label htmlFor="portfolio" className="block text-xs font-semibold text-zinc-400 mb-1.5 pl-1 uppercase">Portfolio / Behance / Dribbble (Optional)</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500"><Globe className="h-4 w-4" /></span>
-                  <input id="portfolio" type="url" placeholder="https://behance.net/username" value={formData.portfolio} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
+                  <input id="portfolio" type="url" placeholder="https://behance.net/aaravsharma" value={formData.portfolio} onChange={handleChange} className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs" />
                 </div>
               </div>
 
@@ -444,6 +455,40 @@ function RegisterForm() {
               </button>
             </form>
           </>
+        )}
+
+        {/* --- STEP 2: VERIFYING PAYMENT --- */}
+        {paymentStep === 'verifying' && (
+          <div className="py-12 text-center flex flex-col items-center justify-center animate-fade-in">
+            {/* Spinning Loader Ring */}
+            <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-4 border-white/5" />
+              <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+              <div className="absolute w-12 h-12 rounded-full bg-purple-950/20 border border-purple-500/20 flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-purple-400 animate-pulse" />
+              </div>
+            </div>
+
+            <h1 className="text-xl font-bold text-white tracking-tight">Verifying Payment...</h1>
+            <p className="text-xs text-zinc-400 mt-2 max-w-xs mx-auto leading-relaxed">
+              We are confirming your transaction and securing your entry ticket. Please do not refresh, go back, or close this window.
+            </p>
+
+            <div className="mt-8 space-y-2 w-full max-w-xs text-left border-t border-white/5 pt-6">
+              <div className="flex items-center gap-2.5 text-xs text-zinc-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                <span>Payment authorized by bank</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-zinc-300">
+                <div className="h-4 w-4 rounded-full border-2 border-purple-500 border-t-transparent animate-spin flex-shrink-0" />
+                <span>Saving registration details...</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-zinc-500">
+                <div className="h-2 w-2 rounded-full bg-zinc-700 mx-1 flex-shrink-0" />
+                <span>Dispatching ticket confirmation</span>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* --- STEP 3: PAYMENT SUCCESS / RECEIPT --- */}
