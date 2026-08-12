@@ -53,6 +53,7 @@ const SPEAKERS = [
   { name: 'Praneeth Margam', role: 'Design Lead, Chai Shots', image: '/speaker-praneeth.jpg' },
   { name: 'Uday Sangisetti', role: 'Founder, ArtArtist', image: '/speaker-uday.jpg' },
   { name: 'Lavanya Pasunoori', role: 'Founder, Value Laden', image: '/speaker-lavanya.jpg' },
+  { name: 'Vishnu Kondoj', role: 'Founder, MasterBrush Art Foundation & 17-Year Graphic Designer at Tech Mahindra', image: '/speaker-new.jpg', bw: true },
 ];
 
 // Why Participate bullets
@@ -526,14 +527,14 @@ export default function LandingPage() {
             <p className="text-zinc-400 text-sm">Gain insights and design guidance from active founders and leads in tech.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {SPEAKERS.map((s, idx) => (
               <div key={idx} className="glass-panel border-white/5 rounded-2xl overflow-hidden group hover:border-zinc-500/20 transition-all duration-300">
                 <div className="h-56 relative overflow-hidden bg-zinc-900">
                   <img
                     src={s.image}
                     alt={s.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${s.bw ? 'grayscale' : ''}`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#03030f] via-transparent to-transparent opacity-85" />
                 </div>
