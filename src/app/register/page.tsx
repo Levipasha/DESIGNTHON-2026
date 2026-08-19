@@ -285,11 +285,29 @@ function RegisterForm() {
           <>
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-zinc-400 backdrop-blur-md mb-3">
-                <Sparkles className="h-3 w-3" />
-                Step 1: Individual Registration Details
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                2-Day Full Pass • Individual Registration
               </div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">DESIGNTHON 2026 Registration</h1>
-              <p className="text-xs text-zinc-500 mt-1">₹1000 entry fee per student. Teams will be created after payment.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">DESIGNTHON 2026 Registration</h1>
+              <p className="text-xs text-zinc-400 mt-1.5">₹1000 all-inclusive fee per student • Teams of 3-4 formed after payment.</p>
+              
+              {/* 2-Day Pass Mini Highlight Banner */}
+              <div className="mt-4 p-3 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-around gap-2 text-left sm:text-center text-[11px]">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-400" />
+                  <span className="text-zinc-300 font-medium"><strong className="text-white">Day 1:</strong> Hands-on Workshop</span>
+                </div>
+                <span className="hidden sm:inline text-zinc-600">•</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="text-zinc-300 font-medium"><strong className="text-white">Day 2:</strong> UI/UX Hackathon</span>
+                </div>
+                <span className="hidden sm:inline text-zinc-600">•</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-zinc-300 font-medium">Food & Certificates</span>
+                </div>
+              </div>
             </div>
 
             {errorMsg && (

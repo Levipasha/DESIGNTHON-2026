@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, Award, Users, ShieldAlert, Sparkles, MessageSquare, ArrowRight, CheckCircle2, ChevronDown, Trophy, Clock, Cpu, BookOpen, Layers, Check, Ticket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Award, Users, ShieldAlert, Sparkles, MessageSquare, ArrowRight, CheckCircle2, ChevronDown, Trophy, Clock, Cpu, BookOpen, Layers, Check, Ticket, ChevronLeft, ChevronRight, Palette, Lightbulb, Rocket, Flame } from 'lucide-react';
 import { CoverflowCarousel } from '@/components/ui/coverflow-carousel';
 
 const PRIZE_TIERS = [
@@ -58,50 +58,49 @@ const SPEAKERS = [
 
 // Why Participate bullets
 const BENEFITS = [
-  'Work on real-world design challenges',
-  'Learn directly from UI/UX experts',
-  'Build an industry-level portfolio',
-  'Collaborate with talented designers',
-  'Network with professionals',
-  'Internship opportunities',
-  'Win exciting prizes',
-  'Receive participation certificates'
+  'Day 1 hands-on UI/UX workshop by industry leads',
+  'Day 2 live hackathon solving real-world challenges',
+  'Figma mastery & Design Thinking frameworks',
+  'Collaborate with talented designers in teams of 3-4',
+  '1-on-1 direct jury mentorship and critique',
+  'Direct internship opportunities at partner firms',
+  '₹20,000 Grand Cash Prize + Winner Trophies',
+  'Verified participation certificate for every student'
 ];
 
 // Highlights list
 const HIGHLIGHTS = [
-  '2-Day UI/UX Design Hackathon',
-  'Design Thinking Workshop',
-  'Industry Mentorship',
-  'Expert Speaker Sessions',
-  'Team Collaboration',
-  'Live Design Challenges',
-  'Portfolio Reviews',
-  'Networking Sessions',
-  'Awards Ceremony'
+  '2-Day National UI/UX Event',
+  'Day 1: Hands-on UI/UX Workshop',
+  'Day 2: Live UI/UX Hackathon',
+  'Design Thinking & Prototyping',
+  'Expert Speaker Sessions & Mentorship',
+  'Team Collaboration (3–4 Members)',
+  'Live Jury Pitches & Demos',
+  '₹20,000 Cash Prize Pool',
+  'Delicious Food Provided Both Days'
 ];
 
 const INCLUSIONS = [
-  '2-Day UI/UX Design Hackathon',
-  'Design Thinking Workshop',
-  'Industry Mentorship',
-  'Expert Speaker Sessions',
-  'Team Collaboration',
-  'Live Design Challenges',
-  'Portfolio Reviews',
-  'Networking Sessions',
-  'Awards Ceremony',
-  'Food will be provided'
+  'Day 1: Full-Day Hands-on Workshop',
+  'Day 2: Live UI/UX Hackathon Access',
+  'Figma & Design Thinking Masterclasses',
+  '1-on-1 Mentorship from Industry Leads',
+  'Participation in ₹20,000 Prize Pool',
+  'Internship Opportunities with Partners',
+  'Verified Participation Certificate',
+  'Team Collaboration & Networking',
+  'Food & Refreshments Included Both Days'
 ];
 
 // FAQ items
 const FAQS = [
-  { q: 'Can I participate individually?', a: 'Yes. Register individually first and then log in to create or join a team.' },
-  { q: 'How many members are allowed?', a: 'Teams must consist of 3-4 members.' },
-  { q: 'Is the payment individual?', a: 'Yes. Every participant pays ₹1000 separately. Every member must complete individual registration and payment before joining or creating a team.' },
-  { q: 'Can I join a team after registering?', a: 'Yes. You can search for teams, enter a Team ID, or open an invite link.' },
-  { q: 'Will certificates be provided?', a: 'Yes. Every participant receives a participation certificate.' },
-  { q: 'Are beginners allowed?', a: 'Absolutely. Students from all skill levels and branches are welcome to learn and participate.' },
+  { q: 'What is the schedule for the 2 days?', a: 'Day 1 (12 Sept) is an intensive, hands-on UI/UX Design Workshop covering Figma, Design Thinking, UX Research, and mentorship from industry leads. Day 2 (13 Sept) is the full-day UI/UX Hackathon where teams build interactive prototypes for live problem statements and present to jury judges.' },
+  { q: 'Can I participate individually?', a: 'Yes. Register individually first and then log in to create or join a team of 3-4 members.' },
+  { q: 'How many members are allowed in a team?', a: 'Teams must consist of 3-4 members. You can form your team anytime before the hackathon begins.' },
+  { q: 'Is the registration fee per student?', a: 'Yes. Every participant pays ₹1000 individually which covers full 2-day access (Day 1 Workshop + Day 2 Hackathon), food, mentorship, and certificates.' },
+  { q: 'Are beginners allowed to join?', a: 'Absolutely! Day 1 is dedicated to teaching UI/UX design concepts, tools, and best practices so participants of all skill levels can build confidently on Day 2.' },
+  { q: 'Will certificates and food be provided?', a: 'Yes. Official participation certificates and food/refreshments are provided for both days of the event.' },
 ];
 
 const SLIDESHOW_IMAGES = [
@@ -189,9 +188,9 @@ export default function LandingPage() {
           {/* Left Column - Hero Content */}
           <div className="space-y-8 max-w-xl text-left">
             {/* Floating Tag */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-zinc-300 backdrop-blur-md animate-pulse">
-              <Sparkles className="h-3.5 w-3.5" />
-              Hyderabad's First UI Hackathon
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-zinc-300 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+              <span>2-Day Event: <strong className="text-white font-bold">Day 1 Workshop</strong> • <strong className="text-white font-bold">Day 2 UI/UX Hackathon</strong></span>
             </div>
 
             {/* Hero Title */}
@@ -207,7 +206,7 @@ export default function LandingPage() {
 
             {/* Tagline */}
             <p className="text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed">
-              Turn your creativity into incredible rewards. Showcase your talent, solve real-world design challenges, collaborate with brilliant minds, and compete for exciting prizes.
+              Experience an immersive 2-day design journey. Attend an intensive hands-on UI/UX workshop on <strong className="text-zinc-200">Day 1</strong>, then collaborate and compete in the live design hackathon on <strong className="text-zinc-200">Day 2</strong> for <strong className="text-white font-semibold">₹20,000</strong> in prizes and internships.
             </p>
 
             {/* Call to Actions */}
@@ -216,7 +215,7 @@ export default function LandingPage() {
                 href="/register"
                 className="group relative px-6 py-3.5 bg-gradient-to-r from-white to-zinc-200 hover:from-white hover:to-zinc-300 text-black rounded-xl font-bold text-xs overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-white/5 flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="relative z-10">REGISTER NOW</span>
+                <span className="relative z-10">REGISTER NOW (₹1000)</span>
                 <ArrowRight className="h-4 w-4 relative z-10" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
               </Link>
@@ -235,9 +234,10 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <Calendar className="h-5 w-5" />
                 </div>
-                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Date:</span>
-                  <span className="text-sm font-bold text-white">12–13 Sept '26</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Duration:</span>
+                  <span className="text-xs font-bold text-white">12–13 Sept '26</span>
+                  <span className="text-[9px] text-zinc-400 font-mono">2 Full Days</span>
                 </div>
               </div>
 
@@ -245,9 +245,10 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <MapPin className="h-5 w-5" />
                 </div>
-                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
+                <div className="flex flex-col">
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Venue:</span>
-                  <span className="text-sm font-bold text-white">Cohort, Hyd</span>
+                  <span className="text-xs font-bold text-white">Cohort, Hyd</span>
+                  <span className="text-[9px] text-zinc-400 font-mono">In-Person</span>
                 </div>
               </div>
 
@@ -255,9 +256,10 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
                   <Ticket className="h-5 w-5" />
                 </div>
-                <div className="flex flex-row items-baseline gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Registration:</span>
-                  <span className="text-sm font-bold text-white">₹1000 / student</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Access Pass:</span>
+                  <span className="text-xs font-bold text-white">₹1000 / student</span>
+                  <span className="text-[9px] text-emerald-400 font-mono">Workshop + Hackathon</span>
                 </div>
               </div>
             </div>
@@ -326,6 +328,178 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 2-Day Event Schedule & Breakdown Section */}
+      <section id="schedule" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+        {/* Decorative backdrop light */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-white/[0.015] blur-3xl rounded-full pointer-events-none" />
+
+        <div className="max-w-3xl mx-auto space-y-4 mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-zinc-300 backdrop-blur-md font-mono">
+            <Clock className="h-3.5 w-3.5 text-zinc-400" />
+            <span>2-DAY IMMERSIVE SCHEDULE</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+            1 Day Workshop + 1 Day UI/UX Hackathon
+          </h2>
+          <p className="text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+            A comprehensive 2-day experience designed to take you from foundational design thinking to high-stakes prototyping and live jury presentations.
+          </p>
+        </div>
+
+        {/* 2-Day Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto text-left relative z-10">
+          
+          {/* DAY 1: Workshop Card */}
+          <div className="group relative rounded-3xl p-8 glass-panel border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-black/40 flex flex-col justify-between overflow-hidden">
+            {/* Top accent glow line */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+            
+            <div>
+              {/* Header Badge */}
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] font-bold tracking-wider uppercase font-mono">
+                  DAY 1 • 12 SEPT 2026
+                </span>
+                <span className="text-[11px] text-zinc-500 font-mono font-medium">09:00 AM – 05:00 PM</span>
+              </div>
+
+              {/* Icon & Title */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 group-hover:bg-white/10 transition-all">
+                  <BookOpen className="h-6 w-6 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    Hands-on Design Workshop
+                  </h3>
+                  <p className="text-xs text-zinc-400">Master UI/UX tools, frameworks & industry secrets</p>
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6">
+                Learn directly from active design leads and founders. Gain hands-on practical skills in Figma, Design Systems, UX Research, and interactive prototyping.
+              </p>
+
+              {/* Modules list */}
+              <div className="space-y-3.5 pt-4 border-t border-white/5">
+                {[
+                  {
+                    title: "UI/UX & Modern Figma Workflow",
+                    desc: "Auto-layouts, responsive constraints, component states & design tokens."
+                  },
+                  {
+                    title: "Design Thinking & UX Frameworks",
+                    desc: "Empathy mapping, user personas, wireframing & rapid UX research methods."
+                  },
+                  {
+                    title: "Industry Speaker Keynote Sessions",
+                    desc: "Live sessions by leads from Chai Shots, ArtArtist, Value Laden & MasterBrush."
+                  },
+                  {
+                    title: "1-on-1 Mentorship & Portfolio Clinic",
+                    desc: "Direct feedback from mentors to sharpen your approach before the hackathon."
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-left">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{item.title}</h4>
+                      <p className="text-[11px] text-zinc-400 leading-snug">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Info Pill */}
+            <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5 text-zinc-300 font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                Zero prior experience required
+              </span>
+              <span className="text-zinc-500 font-mono">Food Provided</span>
+            </div>
+          </div>
+
+          {/* DAY 2: Hackathon Card */}
+          <div className="group relative rounded-3xl p-8 glass-panel border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-black/40 flex flex-col justify-between overflow-hidden">
+            {/* Top accent glow line */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+
+            <div>
+              {/* Header Badge */}
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <span className="px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-300 text-[11px] font-bold tracking-wider uppercase font-mono">
+                  DAY 2 • 13 SEPT 2026
+                </span>
+                <span className="text-[11px] text-zinc-500 font-mono font-medium">09:00 AM – 06:00 PM</span>
+              </div>
+
+              {/* Icon & Title */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 group-hover:bg-white/10 transition-all">
+                  <Trophy className="h-6 w-6 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    Live UI/UX Hackathon
+                  </h3>
+                  <p className="text-xs text-zinc-400">Collaborate, prototype & pitch for ₹20,000 in prizes</p>
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-6">
+                Put your skills to the test in a 3-4 member squad. Solve real industry problem statements, create working prototypes, and pitch in front of the jury.
+              </p>
+
+              {/* Modules list */}
+              <div className="space-y-3.5 pt-4 border-t border-white/5">
+                {[
+                  {
+                    title: "09:00 AM • Problem Statement Reveal",
+                    desc: "Real-world design challenge tracks unveiled across FinTech, EdTech & AI."
+                  },
+                  {
+                    title: "Live UI/UX Prototyping Sprint",
+                    desc: "Intensive team design sprint with continuous guidance from roving mentors."
+                  },
+                  {
+                    title: "Jury Presentation & Design Pitch",
+                    desc: "Present your prototype walkthrough and design decisions directly to the jury."
+                  },
+                  {
+                    title: "Grand Finale & ₹20,000 Awards",
+                    desc: "Cash prize distribution, winner trophies, internship offers & certificates."
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-left">
+                    <div className="w-5 h-5 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-amber-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{item.title}</h4>
+                      <p className="text-[11px] text-zinc-400 leading-snug">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Info Pill */}
+            <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5 text-amber-300 font-semibold">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                ₹20k Cash Pool + Internships
+              </span>
+              <span className="text-zinc-500 font-mono">Food Provided</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       {/* About Section */}
       <section className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         <div>
@@ -333,10 +507,10 @@ export default function LandingPage() {
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">Designing the Digital Frontiers</h2>
         </div>
         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
-          DESIGNTHON is a two-day UI/UX design hackathon that brings together students, designers, artists, and innovators from across India. Participants collaborate in teams to solve real-world design problems, create impactful digital experiences, and present their ideas to a panel of industry experts.
+          DESIGNTHON is a two-day national UI/UX event combining an in-depth <strong className="text-white">Day 1 Workshop</strong> and a thrilling <strong className="text-white">Day 2 Hackathon</strong>. It brings together students, designers, artists, and innovators from across India to learn, collaborate in teams of 3–4, create impactful digital experiences, and present their prototypes to an expert panel.
         </p>
         <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed max-w-3xl mx-auto">
-          Whether you're a beginner or an experienced designer, DESIGNTHON is the perfect platform to learn, network, and showcase your creativity.
+          Whether you're a complete beginner or an experienced designer, DESIGNTHON provides everything: hands-on training, industry mentors, food, and a national platform to win prizes.
         </p>
       </section>
 
@@ -629,12 +803,12 @@ export default function LandingPage() {
 
         <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-4 sm:before:left-1/2 before:w-[1px] before:bg-white/5">
           {[
-            { label: 'Registration Opens', date: 'Now' },
-            { label: 'Registration Closes', date: '10 September' },
-            { label: 'Team Formation Ends', date: '11 September' },
-            { label: 'Hackathon Begins', date: '12 September (09:00 AM)' },
-            { label: 'Final Presentation & Demos', date: '13 September' },
-            { label: 'Winner Announcement', date: '13 September (Evening)' },
+            { label: 'Registration Opens', date: 'Now Live (Open for All Students)' },
+            { label: 'Registration Closes', date: '10 September 2026' },
+            { label: 'Team Formation Closes', date: '11 September 2026' },
+            { label: 'Day 1 • UI/UX Design Workshop', date: '12 September (09:00 AM – Full Day)' },
+            { label: 'Day 2 • Live UI/UX Hackathon Sprint', date: '13 September (09:00 AM – 04:00 PM)' },
+            { label: 'Day 2 • Final Demos & Grand Awards', date: '13 September (04:30 PM – Evening)' },
           ].map((item, idx) => {
             const isEven = idx % 2 === 0;
             return (
