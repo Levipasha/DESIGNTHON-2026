@@ -86,6 +86,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const HIDDEN_TEST_EMAILS = ['admin@retrend.com', 'admnklnklin@retrend.com', 'abbupasha61@gmail.com'];
+  const HIDDEN_TEST_NAMES = ['p9uy87ghuoijpok opihguyftc', 'hjjjkkj', 'skyweb'];
+
+  const isRealAttendee = (p: any) => {
+    const email = (p.email || '').toLowerCase().trim();
+    const name = (p.name || '').toLowerCase().trim();
+    if (HIDDEN_TEST_EMAILS.includes(email) || HIDDEN_TEST_NAMES.includes(name)) return false;
+    if (email.endsWith('@retrend.com')) return false;
+    return true;
+  };
+
   // 2. Fetch Participants List
   const fetchParticipants = async () => {
     if (!token) return;
@@ -96,7 +107,7 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         const list = await res.json();
-        setParticipants(list);
+        setParticipants(list.filter(isRealAttendee));
       }
     } catch (err) {
       console.error(err);
