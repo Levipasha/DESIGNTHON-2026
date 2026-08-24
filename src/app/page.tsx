@@ -903,22 +903,42 @@ export default function LandingPage() {
       </section>
 
       {/* Helpdesk Support Section */}
-      <section className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="glass-panel border-white/10 p-12 rounded-3xl relative overflow-hidden bg-gradient-to-b from-[#110d29]/60 to-[#03030f]/60">
+      <section className="py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="glass-panel border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden bg-gradient-to-b from-[#110d29]/60 to-[#03030f]/60">
           <div className="absolute top-0 left-[50%] transform -translate-x-[50%] h-[1px] w-[80%] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-          <h2 className="text-2xl font-extrabold text-white mb-3">Have Questions or Need Help?</h2>
-          <p className="text-zinc-400 text-xs mb-8 max-w-lg mx-auto">
-            Our organizing team is available to help resolve payment inquiries, college group approvals, or portfolio uploads.
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Have Questions or Need Help?</h2>
+          <p className="text-zinc-400 text-xs sm:text-sm mb-8 max-w-lg mx-auto">
+            Our organizing team is available to help resolve payment inquiries, college group approvals, or event coordination.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-md mx-auto mb-8 text-left text-xs">
-            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto mb-8 text-left text-xs">
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
               <span className="text-[10px] text-zinc-500 uppercase font-bold">Email Helpdesk</span>
               <a href="mailto:official@skywebdev.xyz" className="block font-semibold text-zinc-200 mt-1 hover:text-white truncate">official@skywebdev.xyz</a>
             </div>
-            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold">Phone helpline</span>
-              <p className="font-semibold text-zinc-200 mt-1">+91 9912937061</p>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Helpline</span>
+              <a href="tel:+919912937061" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 9912937061</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Vamshi</span>
+              <a href="tel:+918341339097" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 83413 39097</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Arpan</span>
+              <a href="tel:+918121422761" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 81214 22761</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Kalyan</span>
+              <a href="tel:+917396566279" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 7396 566 279</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Arun</span>
+              <a href="tel:+918897959612" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 88979 59612</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center sm:col-span-2 lg:col-span-1">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Vicky</span>
+              <a href="tel:+917396514989" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 7396 514 989</a>
             </div>
           </div>
 
