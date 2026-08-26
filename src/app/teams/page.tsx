@@ -267,11 +267,6 @@ export default function TeamsPage() {
               >
                 <Users className="h-4 w-4" />
                 <span>Teams</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold ${
-                  activeTab === 'teams' ? 'bg-black/10 text-black' : 'bg-white/10 text-zinc-300'
-                }`}>
-                  {teams.length}
-                </span>
               </button>
 
               <button
@@ -284,14 +279,10 @@ export default function TeamsPage() {
               >
                 <UserCheck className="h-4 w-4" />
                 <span>Participants</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold ${
-                  activeTab === 'participants' ? 'bg-black/10 text-black' : 'bg-white/10 text-zinc-300'
-                }`}>
-                  {participants.length}
-                </span>
               </button>
             </div>
           </div>
+
         </div>
 
         {/* ========================================================================= */}
