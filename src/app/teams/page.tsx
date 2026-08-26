@@ -251,7 +251,7 @@ export default function TeamsPage() {
           <p className="text-xs text-zinc-400 mt-2.5 max-w-lg mx-auto leading-relaxed">
             {activeTab === 'teams'
               ? 'Browse public design groups looking for members. Send a request to join a team or create your own.'
-              : 'Browse participants registered for DESIGNTHON 2026. Explore attendees from top colleges and connect with future teammates.'}
+              : 'Browse participants registered for DESIGNATHON 2026. Explore attendees from top colleges and connect with future teammates.'}
           </p>
 
           {/* Section Switcher Tabs */}

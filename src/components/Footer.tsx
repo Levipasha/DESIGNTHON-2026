@@ -75,9 +75,9 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-zinc-600">
-          <p>© {new Date().getFullYear()} DESIGNTHON. Powered by SkyWeb IT Solutions Pvt. Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} DESIGNATHON. Powered by SkyWeb IT Solutions Pvt. Ltd. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-zinc-400 transition-colors">designthon.in</Link>
+            <Link href="/" className="hover:text-zinc-400 transition-colors">designathon.in</Link>
             <Link href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-zinc-400 transition-colors">Terms of Service</Link>
           </div>

@@ -305,7 +305,7 @@ export default function JoinTeamPage() {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-zinc-400 backdrop-blur-md mb-2">
             <Sparkles className="h-3 w-3 animate-pulse" />
-            DESIGNTHON 2026 Matchmaking
+            DESIGNATHON 2026 Matchmaking
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">Team Invitation</h2>
         </div>

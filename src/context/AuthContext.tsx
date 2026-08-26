@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 export interface User {
   id: string;
+  registrationId?: string;
   name: string;
   email: string;
   phone: string;
@@ -14,14 +15,20 @@ export interface User {
   linkedin: string;
   portfolio?: string;
   role: 'admin' | 'team-leader' | 'participant';
-  paymentStatus: 'pending' | 'paid' | 'refunded';
+  adminRole?: 'super-admin' | 'viewer';
+  registrationStatus?: 'DETAILS_SUBMITTED' | 'PAYMENT_PENDING' | 'PAYMENT_COMPLETED' | 'CONFIRMED' | 'PAYMENT_FAILED' | 'CANCELLED';
+  currentPhase?: 'REGISTRATION' | 'PAYMENT' | 'CONFIRMATION';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   paymentId?: string;
   couponUsed?: string;
+  originalAmount?: number;
+  discountAmount?: number;
   amountPaid: number;
   teamId?: string;
   teamRole?: 'leader' | 'member';
   checkedIn: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 interface AuthContextType {
@@ -32,6 +39,8 @@ interface AuthContextType {
   logout: () => void;
   refreshUser: () => Promise<User | null>;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isViewerAdmin: boolean;
   isPaid: boolean;
   hasTeam: boolean;
   isTeamLeader: boolean;
@@ -95,6 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshUser]);
 
   const isAdmin = user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'admin' && user?.adminRole !== 'viewer';
+  const isViewerAdmin = user?.role === 'admin' && user?.adminRole === 'viewer';
   const isPaid = user?.paymentStatus === 'paid';
   const hasTeam = !!user?.teamId;
   const isTeamLeader = user?.role === 'team-leader';
@@ -109,6 +120,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         refreshUser,
         isAdmin,
+        isSuperAdmin,
+        isViewerAdmin,
         isPaid,
         hasTeam,
         isTeamLeader,

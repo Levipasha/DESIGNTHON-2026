@@ -26,7 +26,7 @@ export default function PrivacyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-white">1. Information We Collect</h2>
             <p>
-              When you register for DESIGNTHON, we collect personal information necessary to organize the event, manage teams, and process registrations. This includes your name, email address, contact number, college/organization details, and payment information.
+              When you register for DESIGNATHON, we collect personal information necessary to organize the event, manage teams, and process registrations. This includes your name, email address, contact number, college/organization details, and payment information.
             </p>
           </section>
 
@@ -61,13 +61,13 @@ export default function PrivacyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-white">5. Your Rights</h2>
             <p>
-              You have the right to access, correct, or request the deletion of your personal data stored in your profile dashboard. For any privacy-related inquiries, contact us at <a href="mailto:support@designthon.in" className="text-white underline">support@designthon.in</a>.
+              You have the right to access, correct, or request the deletion of your personal data stored in your profile dashboard. For any privacy-related inquiries, contact us at <a href="mailto:support@designathon.in" className="text-white underline">support@designathon.in</a>.
             </p>
           </section>
         </div>
 
         <div className="border-t border-white/5 mt-16 pt-8 flex justify-between text-xs text-zinc-500 font-medium">
-          <span>© 2026 designthon.in</span>
+          <span>© 2026 designathon.in</span>
           <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
         </div>
       </div>

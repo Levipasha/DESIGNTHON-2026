@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || 'mongodb+srv://designathon:12345%40qwert@cluster0.zugoiy9.mongodb.net/?appName=Cluster0';
@@ -25,6 +25,11 @@ const isRealParticipant = (u: any) => {
   return true;
 };
 
+const isConfirmedParticipant = (u: any) => {
+  if (!isRealParticipant(u)) return false;
+  return u.paymentStatus === 'paid' || u.registrationStatus === 'CONFIRMED' || u.registrationStatus === 'PAYMENT_COMPLETED';
+};
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -39,8 +44,9 @@ export async function GET(req: NextRequest) {
 
     const teamsMap = new Map(teams.map((t: any) => [t.id, t.name]));
 
-    let participants = users.filter(isRealParticipant).map((u: any) => ({
+    let participants = users.filter(isConfirmedParticipant).map((u: any) => ({
       id: u.id || String(u._id),
+      registrationId: u.registrationId || `DT26-${(u.id || String(u._id)).substring(0, 6).toUpperCase()}`,
       name: u.name,
       college: u.college,
       branch: u.branch,
@@ -52,6 +58,7 @@ export async function GET(req: NextRequest) {
       teamName: u.teamId ? (teamsMap.get(u.teamId) || 'In Team') : undefined,
       teamRole: u.teamRole,
       paymentStatus: u.paymentStatus,
+      registrationStatus: u.registrationStatus || 'CONFIRMED',
       createdAt: u.createdAt
     }));
 

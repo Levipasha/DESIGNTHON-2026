@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Calendar, MapPin, Award, Users, ShieldAlert, Sparkles, MessageSquare, ArrowRight, CheckCircle2, ChevronDown, Trophy, Clock, Cpu, BookOpen, Layers, Check, Ticket, ChevronLeft, ChevronRight, Palette, Lightbulb, Rocket, Flame } from 'lucide-react';
-import { CoverflowCarousel } from '@/components/ui/coverflow-carousel';
 
 const PRIZE_TIERS = [
   {
@@ -23,10 +22,10 @@ const PRIZE_TIERS = [
     name: "First Prize",
     icon: <Trophy className="h-5 w-5 text-white" />,
     prizeValue: "₹20,000 Cash",
-    description: "Become the DESIGNTHON Champion and take home the grand cash reward.",
+    description: "Become the DESIGNATHON Champion and take home the grand cash reward.",
     features: [
       "Grand ₹20,000 Cash Prize",
-      "DESIGNTHON Winner Trophy",
+      "DESIGNATHON Winner Trophy",
       "Winner E-Certificate",
       "National Portfolio Spotlight"
     ],
@@ -98,7 +97,7 @@ const FAQS = [
   { q: 'What is the schedule for the 2 days?', a: 'Day 1 (12 Sept) is an intensive, hands-on UI/UX Design Workshop covering Figma, Design Thinking, UX Research, and mentorship from industry leads. Day 2 (13 Sept) is the full-day UI/UX Hackathon where teams build interactive prototypes for live problem statements and present to jury judges.' },
   { q: 'Can I participate individually?', a: 'Yes. Register individually first and then log in to create or join a team of 3-4 members.' },
   { q: 'How many members are allowed in a team?', a: 'Teams must consist of 3-4 members. You can form your team anytime before the hackathon begins.' },
-  { q: 'Is the registration fee per student?', a: 'Yes. Every participant pays ₹1000 individually which covers full 2-day access (Day 1 Workshop + Day 2 Hackathon), food, mentorship, and certificates.' },
+  { q: 'Is the registration pass individual?', a: 'Yes. Every participant registers individually, which covers full 2-day access (Day 1 Workshop + Day 2 Hackathon), food, mentorship, and certificates.' },
   { q: 'Are beginners allowed to join?', a: 'Absolutely! Day 1 is dedicated to teaching UI/UX design concepts, tools, and best practices so participants of all skill levels can build confidently on Day 2.' },
   { q: 'Will certificates and food be provided?', a: 'Yes. Official participation certificates and food/refreshments are provided for both days of the event.' },
 ];
@@ -114,37 +113,6 @@ const SLIDESHOW_IMAGES = [
 export default function LandingPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const marqueeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const marqueeContainer = marqueeRef.current;
-    if (!marqueeContainer) return;
-
-    const updateOpacity = () => {
-      const items = marqueeContainer.querySelectorAll('.marquee-item');
-      const containerRect = marqueeContainer.getBoundingClientRect();
-      const centerY = containerRect.top + containerRect.height / 2;
-
-      items.forEach((item) => {
-        const itemRect = item.getBoundingClientRect();
-        const itemCenterY = itemRect.top + itemRect.height / 2;
-        const distance = Math.abs(centerY - itemCenterY);
-        const maxDistance = containerRect.height / 2;
-        const normalizedDistance = Math.min(distance / maxDistance, 1);
-        const opacity = 1 - normalizedDistance * 0.75;
-        (item as HTMLElement).style.opacity = opacity.toString();
-      });
-    };
-
-    const animationFrame = () => {
-      updateOpacity();
-      requestAnimationFrame(animationFrame);
-    };
-
-    const frame = requestAnimationFrame(animationFrame);
-
-    return () => cancelAnimationFrame(frame);
-  }, []);
 
   // Countdown timer logic targeting Sept 12, 2026 at 09:00 AM
   useEffect(() => {
@@ -195,7 +163,7 @@ export default function LandingPage() {
 
             {/* Hero Title */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white">
-              DESIGNTHON 2026
+              DESIGNATHON 2026
               <span className="block text-zinc-500 text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase font-mono mt-1">
                 by SkyWeb
               </span>
@@ -215,7 +183,7 @@ export default function LandingPage() {
                 href="/register"
                 className="group relative px-6 py-3.5 bg-gradient-to-r from-white to-zinc-200 hover:from-white hover:to-zinc-300 text-black rounded-xl font-bold text-xs overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-white/5 flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="relative z-10">REGISTER NOW (₹1000)</span>
+                <span className="relative z-10">REGISTER NOW</span>
                 <ArrowRight className="h-4 w-4 relative z-10" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
               </Link>
@@ -258,7 +226,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Access Pass:</span>
-                  <span className="text-xs font-bold text-white">₹1000 / student</span>
+                  <span className="text-xs font-bold text-white">Full Event Pass</span>
                   <span className="text-[9px] text-emerald-400 font-mono">Workshop + Hackathon</span>
                 </div>
               </div>
@@ -266,25 +234,31 @@ export default function LandingPage() {
 
           </div>
 
-          {/* Right Column - Vertical Marquee */}
-          <div ref={marqueeRef} className="relative h-[400px] sm:h-[450px] flex items-center justify-center">
-            <div className="relative w-full h-full font-mono">
-              <VerticalMarquee speed={25} className="h-full">
-                {marqueeItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="text-2xl md:text-3xl lg:text-4xl font-light tracking-tight py-6 text-zinc-500 text-center marquee-item transition-opacity duration-300"
-                  >
-                    {item}
+          {/* Right Column - Pure CSS Photo Slideshow */}
+          <div className="relative flex flex-col items-center justify-center w-full">
+            <div className="slideshow border border-white/10 shadow-2xl shadow-purple-950/20 bg-[#08081a]">
+              <div className="slides">
+                {SLIDESHOW_IMAGES.map((img, idx) => (
+                  <div key={idx} className="slide relative group">
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                   </div>
                 ))}
-              </VerticalMarquee>
-              
-              {/* Top vignette */}
-              <div className="pointer-events-none absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#03030f] via-[#03030f]/50 to-transparent z-10"></div>
-              
-              {/* Bottom vignette */}
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#03030f] via-[#03030f]/50 to-transparent z-10"></div>
+              </div>
+            </div>
+            
+            {/* National Level Hackathon Info Badge */}
+            <div className="mt-4 flex justify-center">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-[#08081a]/80 backdrop-blur-md shadow-lg">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[11px] font-semibold text-zinc-300 tracking-wide">
+                  Conducted National Level Hackathon on 8/08/2026 at Nellore
+                </p>
+              </div>
             </div>
           </div>
 
@@ -292,38 +266,16 @@ export default function LandingPage() {
       </section>
 
       {/* Countdown Ticker Section */}
-      <section className="py-16 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm">
+      <section className="py-14 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">Hacking Starts In</p>
-          <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto mb-12">
+          <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto">
             {Object.entries(timeLeft).map(([label, value]) => (
               <div key={label} className="flex flex-col items-center p-3 rounded-xl bg-[#08081a]/60 border border-white/5 shadow-inner">
                 <span className="text-2xl sm:text-4xl font-extrabold text-white font-mono">{String(value).padStart(2, '0')}</span>
                 <span className="text-[10px] text-zinc-500 capitalize mt-1 font-semibold">{label}</span>
               </div>
             ))}
-          </div>
-
-          {/* Slideshow (Coverflow Carousel) */}
-          <div className="max-w-4xl mx-auto mb-8 relative">
-            <CoverflowCarousel
-              slides={SLIDESHOW_IMAGES}
-              showNavigation
-              showPagination
-              cardWidth="clamp(250px, 35vw, 360px)"
-              autoPlay={true}
-              autoPlayInterval={2000}
-              className="py-6"
-              cardClassName="border border-white/10 hover:border-white/20 transition-all duration-300 shadow-2xl"
-            />
-          </div>
-
-          {/* National Level Hackathon Info Text */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-xs sm:text-sm font-semibold text-zinc-300 tracking-wide">
-              Conducted National Level Hackathon on 8/08/2026 at Nellore
-            </p>
           </div>
         </div>
       </section>
@@ -503,14 +455,14 @@ export default function LandingPage() {
       {/* About Section */}
       <section className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         <div>
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 block font-mono">What is DESIGNTHON?</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 block font-mono">What is DESIGNATHON?</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">Designing the Digital Frontiers</h2>
         </div>
         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
-          DESIGNTHON is a two-day national UI/UX event combining an in-depth <strong className="text-white">Day 1 Workshop</strong> and a thrilling <strong className="text-white">Day 2 Hackathon</strong>. It brings together students, designers, artists, and innovators from across India to learn, collaborate in teams of 3–4, create impactful digital experiences, and present their prototypes to an expert panel.
+          DESIGNATHON is a two-day national UI/UX event combining an in-depth <strong className="text-white">Day 1 Workshop</strong> and a thrilling <strong className="text-white">Day 2 Hackathon</strong>. It brings together students, designers, artists, and innovators from across India to learn, collaborate in teams of 3–4, create impactful digital experiences, and present their prototypes to an expert panel.
         </p>
         <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed max-w-3xl mx-auto">
-          Whether you're a complete beginner or an experienced designer, DESIGNTHON provides everything: hands-on training, industry mentors, food, and a national platform to win prizes.
+          Whether you're a complete beginner or an experienced designer, DESIGNATHON provides everything: hands-on training, industry mentors, food, and a national platform to win prizes.
         </p>
       </section>
 
@@ -731,10 +683,10 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 max-w-5xl mx-auto text-left">
           {[
-            { step: '1', title: 'Complete Registration', desc: 'Fill individual registration form.' },
-            { step: '2', title: 'Pay Registration Fee', desc: 'Pay ₹1000 individual student fee.' },
+            { step: '1', title: 'Enter Details', desc: 'Fill individual registration form.' },
+            { step: '2', title: 'Get Access Pass', desc: 'Complete registration & unlock your pass.' },
             { step: '3', title: 'Create or Join Team', desc: 'Form team of 3-4 members.' },
-            { step: '4', title: 'Confirmation Receipt', desc: 'Download payment receipt pdf.' },
+            { step: '4', title: 'Confirmation Receipt', desc: 'Download official entry pass.' },
             { step: '5', title: 'Participate in Event', desc: 'Design prototypes at venue.' },
           ].map((item, idx) => (
             <div key={idx} className="p-5 rounded-2xl glass-panel border-white/5 flex flex-col justify-between h-44 hover:border-white/10 transition-all">
@@ -970,73 +922,4 @@ function cn(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-interface VerticalMarqueeProps {
-  children: React.ReactNode;
-  pauseOnHover?: boolean;
-  reverse?: boolean;
-  className?: string;
-  speed?: number;
-  onItemsRef?: (items: HTMLElement[]) => void;
-}
 
-function VerticalMarquee({
-  children,
-  pauseOnHover = false,
-  reverse = false,
-  className,
-  speed = 30,
-  onItemsRef,
-}: VerticalMarqueeProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (onItemsRef && containerRef.current) {
-      const items = Array.from(containerRef.current.querySelectorAll('.marquee-item')) as HTMLElement[];
-      onItemsRef(items);
-    }
-  }, [onItemsRef]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "group flex flex-col overflow-hidden",
-        className
-      )}
-      style={
-        {
-          "--duration": `${speed}s`,
-        } as React.CSSProperties
-      }
-    >
-      <div
-        className={cn(
-          "flex shrink-0 flex-col animate-[marquee-vertical_var(--duration)_linear_infinite]",
-          reverse && "[animation-direction:reverse]",
-          pauseOnHover && "group-hover:[animation-play-state:paused]"
-        )}
-      >
-        {children}
-      </div>
-      <div
-        className={cn(
-          "flex shrink-0 flex-col animate-[marquee-vertical_var(--duration)_linear_infinite]",
-          reverse && "[animation-direction:reverse]",
-          pauseOnHover && "group-hover:[animation-play-state:paused]"
-        )}
-        aria-hidden="true"
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const marqueeItems = [
-  "Undergraduate Students",
-  "Postgraduate Students",
-  "UI/UX Designers",
-  "Graphic Designers",
-  "Product Designers",
-  "Creative Artists",
-];

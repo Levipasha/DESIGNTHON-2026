@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || 'mongodb+srv://designathon:12345%40qwert@cluster0.zugoiy9.mongodb.net/?appName=Cluster0';
@@ -25,12 +25,17 @@ const isRealParticipant = (u: any) => {
   return true;
 };
 
+const isConfirmedParticipant = (u: any) => {
+  if (!isRealParticipant(u)) return false;
+  return u.paymentStatus === 'paid' || u.registrationStatus === 'CONFIRMED' || u.registrationStatus === 'PAYMENT_COMPLETED';
+};
+
 export async function GET() {
   try {
     const db = await getDb();
     const users = await db.collection('users').find({}).toArray();
-    const realUsers = users.filter(isRealParticipant);
-    const collegesSet = new Set(realUsers.map((u: any) => u.college).filter(Boolean));
+    const confirmedUsers = users.filter(isConfirmedParticipant);
+    const collegesSet = new Set(confirmedUsers.map((u: any) => u.college).filter(Boolean));
 
     return NextResponse.json(Array.from(collegesSet), {
       headers: {

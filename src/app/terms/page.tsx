@@ -26,7 +26,7 @@ export default function TermsPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-white">1. Event Registration</h2>
             <p>
-              By registering for DESIGNTHON, you agree to provide accurate, current, and complete information. Each participant must complete their registration and submit any required payments to be verified. Teams must consist of 3 to 4 members.
+              By registering for DESIGNATHON, you agree to provide accurate, current, and complete information. Each participant must complete their registration and submit any required payments to be verified. Teams must consist of 3 to 4 members.
             </p>
           </section>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-white">3. Intellectual Property</h2>
             <p>
-              All submissions, designs, code, and prototypes created during the hackathon remain the intellectual property of the respective participants. However, by submitting your project, you grant DESIGNTHON and its official partners a non-exclusive license to showcase, document, or feature your project for promotional purposes.
+              All submissions, designs, code, and prototypes created during the hackathon remain the intellectual property of the respective participants. However, by submitting your project, you grant DESIGNATHON and its official partners a non-exclusive license to showcase, document, or feature your project for promotional purposes.
             </p>
           </section>
 
@@ -54,13 +54,13 @@ export default function TermsPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-white">5. Limitation of Liability</h2>
             <p>
-              DESIGNTHON organizers, partner firms (ArtArtist, Value Laden), and venue hosts (Samskruti College) are not liable for any direct, indirect, incidental, or consequential damages resulting from your participation in the hackathon.
+              DESIGNATHON organizers, partner firms (ArtArtist, Value Laden), and venue hosts (Samskruti College) are not liable for any direct, indirect, incidental, or consequential damages resulting from your participation in the hackathon.
             </p>
           </section>
         </div>
 
         <div className="border-t border-white/5 mt-16 pt-8 flex justify-between text-xs text-zinc-500 font-medium">
-          <span>© 2026 designthon.in</span>
+          <span>© 2026 designathon.in</span>
           <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
         </div>
       </div>

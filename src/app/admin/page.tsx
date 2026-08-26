@@ -2,25 +2,49 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import { BarChart3, Users, Ticket, Award, Settings, Bell, Search, UserCheck, ShieldAlert, Plus, ToggleLeft, ToggleRight, Trash2, GitMerge, FileDown, Radio, Camera, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Users, Ticket, Award, Settings, Bell, Search, UserCheck, ShieldAlert, Plus, ToggleLeft, ToggleRight, Trash2, GitMerge, FileDown, Radio, Camera, RefreshCw, Sparkles, CheckCircle2, Shield, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, token, loading } = useAuth();
+  const { user, token, loading, login, isSuperAdmin, isViewerAdmin } = useAuth();
   const { addToast, socket } = useSocket();
 
-  // Protect page and ensure Admin role
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login');
-      } else if (user.role !== 'admin') {
-        router.push('/dashboard');
+  // Admin Firebase Login State
+  const [adminLoginLoading, setAdminLoginLoading] = useState(false);
+  const [adminLoginError, setAdminLoginError] = useState('');
+
+  const handleAdminGoogleLogin = async () => {
+    setAdminLoginLoading(true);
+    setAdminLoginError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/auth/admin-google-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        setAdminLoginError(data.message || 'Access Denied: You do not have permission to access the admin panel.');
+        return;
       }
+
+      login(data.token, data.user);
+      addToast('Admin Authorized', `Welcome, ${data.user.name}!`, 'success');
+    } catch (err: any) {
+      console.error('Admin Google sign-in error:', err);
+      setAdminLoginError(err.message || 'Failed to authenticate with Google.');
+    } finally {
+      setAdminLoginLoading(false);
     }
-  }, [user, loading, router]);
+  };
 
   // Tab State: stats | participants | qr | coupons | teams | broadcast
   const [activeTab, setActiveTab] = useState('stats');
@@ -32,6 +56,7 @@ export default function AdminDashboard() {
   // Participants Data
   const [participants, setParticipants] = useState<any[]>([]);
   const [participantSearch, setParticipantSearch] = useState('');
+  const [participantFilter, setParticipantFilter] = useState<'all' | 'confirmed' | 'submitted' | 'failed'>('all');
   const [participantsLoading, setParticipantsLoading] = useState(false);
 
   // QR scanner state
@@ -102,7 +127,8 @@ export default function AdminDashboard() {
     if (!token) return;
     setParticipantsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/participants?search=${participantSearch}`, {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/participants?search=${encodeURIComponent(participantSearch)}&filter=${participantFilter}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -121,7 +147,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setCouponsLoading(true);
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/coupons', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/coupons', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -154,7 +180,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Trigger loads based on tab selection
+  // Trigger loads based on tab selection & search
   useEffect(() => {
     if (user && user.role === 'admin') {
       if (activeTab === 'stats') fetchAdminStats();
@@ -163,7 +189,45 @@ export default function AdminDashboard() {
       if (activeTab === 'coupons') fetchCoupons();
       if (activeTab === 'teams') fetchAdminTeams();
     }
-  }, [activeTab, user, participantSearch]);
+  }, [activeTab, user, participantSearch, participantFilter]);
+
+  // Realtime Socket listener for admin stats and registrations
+  useEffect(() => {
+    if (!socket || !user || user.role !== 'admin') return;
+
+    const onStatsUpdate = () => {
+      fetchAdminStats();
+      fetchParticipants();
+    };
+
+    const onRegCreated = (data: any) => {
+      fetchAdminStats();
+      fetchParticipants();
+      if (data?.user?.name) {
+        addToast('New Participant (Phase 1)', `${data.user.name} submitted registration details.`, 'info');
+      }
+    };
+
+    const onPaymentUpdated = (data: any) => {
+      fetchAdminStats();
+      fetchParticipants();
+      if (data?.status === 'CONFIRMED') {
+        addToast('Payment Confirmed!', `A participant completed payment & confirmed registration.`, 'success');
+      }
+    };
+
+    socket.on('admin_stats_updated', onStatsUpdate);
+    socket.on('registration_created', onRegCreated);
+    socket.on('registration_updated', onStatsUpdate);
+    socket.on('payment_updated', onPaymentUpdated);
+
+    return () => {
+      socket.off('admin_stats_updated', onStatsUpdate);
+      socket.off('registration_created', onRegCreated);
+      socket.off('registration_updated', onStatsUpdate);
+      socket.off('payment_updated', onPaymentUpdated);
+    };
+  }, [socket, user, activeTab]);
 
   if (loading || !user || user.role !== 'admin') {
     return (
@@ -390,6 +454,89 @@ export default function AdminDashboard() {
     }, 1800);
   };
 
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
+        <p className="text-xs text-zinc-500 font-mono">Authenticating administrative credentials...</p>
+      </div>
+    );
+  }
+
+  // Render Admin Authorization Screen if not admin
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="flex-1 w-full bg-[#03030f] relative overflow-hidden bg-grid py-20 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <div className="absolute top-[-10%] left-[-15%] w-[45%] h-[45%] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-15%] w-[45%] h-[45%] rounded-full bg-blue-900/10 blur-[100px] pointer-events-none" />
+
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-panel border-purple-500/20 bg-[#060618]/90 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl text-center space-y-6">
+            
+            {/* Header Shield */}
+            <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 mx-auto shadow-inner">
+              <Shield className="h-8 w-8" />
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest font-mono">Restricted Access</span>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Control Terminal</h1>
+              <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                Sign in with your authorized Google administrator account to manage participants, coupons, and live tracking.
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {adminLoginError && (
+              <div className="p-3.5 rounded-2xl border border-rose-500/30 bg-rose-950/25 text-rose-300 text-xs text-left flex gap-2.5 items-start">
+                <ShieldAlert className="h-4 w-4 flex-shrink-0 text-rose-400 mt-0.5" />
+                <span className="leading-relaxed">{adminLoginError}</span>
+              </div>
+            )}
+
+            {user && user.role !== 'admin' && (
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-left space-y-1">
+                <p className="text-[10px] text-zinc-500 uppercase font-bold">Currently signed in as:</p>
+                <p className="text-xs text-zinc-300 font-mono">{user.email} <span className="text-zinc-500">({user.role})</span></p>
+                <p className="text-[10px] text-amber-400 pt-1">This account does not have administrator permissions.</p>
+              </div>
+            )}
+
+            {/* Google Sign-in Button */}
+            <button
+              onClick={handleAdminGoogleLogin}
+              disabled={adminLoginLoading}
+              className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-200 text-black font-bold text-xs transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 shadow-lg active:scale-[0.98]"
+            >
+              {adminLoginLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Verifying Administrator Privileges...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                    <path d="M47.532 24.552c0-1.636-.132-3.2-.388-4.704H24v9.192h13.22c-.584 3.024-2.3 5.588-4.872 7.316v6.024h7.876c4.612-4.248 7.308-10.52 7.308-17.828z" fill="#4285F4"/>
+                    <path d="M24 48c6.612 0 12.168-2.196 16.224-5.948l-7.876-6.024c-2.196 1.468-4.996 2.34-8.348 2.34-6.42 0-11.856-4.336-13.796-10.16H2.044v6.22C6.084 42.864 14.452 48 24 48z" fill="#34A853"/>
+                    <path d="M10.204 28.208A14.46 14.46 0 0 1 9.6 24c0-1.46.252-2.876.604-4.208V13.572H2.044A23.988 23.988 0 0 0 0 24c0 3.876.936 7.548 2.044 10.428l8.16-6.22z" fill="#FBBC05"/>
+                    <path d="M24 9.636c3.62 0 6.868 1.244 9.42 3.676l7.02-7.02C36.168 2.392 30.612 0 24 0 14.452 0 6.084 5.136 2.044 13.572l8.16 6.22C12.144 13.972 17.58 9.636 24 9.636z" fill="#EA4335"/>
+                  </svg>
+                  <span>Sign in with Google (Admin Access)</span>
+                </>
+              )}
+            </button>
+
+            <div className="pt-4 border-t border-white/5 text-[10px] text-zinc-600">
+              Only authorized administrator Gmail accounts can unlock this terminal.
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 w-full bg-[#03030f] relative overflow-hidden bg-grid py-12 px-4 sm:px-6 lg:px-8">
       {/* ambient glows */}
@@ -401,12 +548,24 @@ export default function AdminDashboard() {
         {/* Sidebar Nav */}
         <aside className="w-full md:w-60 flex-shrink-0 flex flex-col gap-2">
           {/* Header Panel */}
-          <div className="glass-panel border-purple-500/20 bg-purple-500/5 rounded-2xl p-5 mb-4 backdrop-blur-xl relative overflow-hidden">
-            <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest block">Core Administrator</span>
-            <h2 className="text-sm font-extrabold text-white mt-0.5">Control Terminal</h2>
+          <div className="glass-panel border-purple-500/20 bg-purple-500/5 rounded-2xl p-5 mb-4 backdrop-blur-xl relative overflow-hidden text-left">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest block">
+                {isViewerAdmin ? 'Viewer Admin' : 'Super Admin'}
+              </span>
+              <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                isViewerAdmin ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              }`}>
+                {isViewerAdmin ? 'Read-Only' : 'Full Edit'}
+              </span>
+            </div>
+            <h2 className="text-sm font-extrabold text-white mt-1.5 truncate">{user?.name || 'Administrator'}</h2>
+            <p className="text-[10px] text-zinc-400 font-mono truncate">{user?.email}</p>
             <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span className="text-[10px] text-zinc-400 font-semibold">Systems Secure</span>
+              <span className={`h-2 w-2 rounded-full ${isViewerAdmin ? 'bg-amber-500' : 'bg-emerald-500'} animate-ping`}></span>
+              <span className="text-[10px] text-zinc-400 font-semibold">
+                {isViewerAdmin ? 'Observer Mode Active' : 'All Privileges Active'}
+              </span>
             </div>
           </div>
 
@@ -578,103 +737,179 @@ export default function AdminDashboard() {
           {/* --- SUBTAB 2: PARTICIPANTS LIST --- */}
           {activeTab === 'participants' && (
             <div className="space-y-6 animate-[fadeIn_0.2s_ease-out] text-left">
-              {/* Toolbar */}
-              <div className="glass-panel border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full sm:w-80">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
-                    <Search className="h-4 w-4" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search name, email, college or phone..."
-                    value={participantSearch}
-                    onChange={(e) => setParticipantSearch(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
-                  />
+              {/* Toolbar & Filter Tabs */}
+              <div className="glass-panel border-white/5 rounded-2xl p-4 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="relative w-full sm:w-80">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search ID, name, email, college or phone..."
+                      value={participantSearch}
+                      onChange={(e) => setParticipantSearch(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-2 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
+                    />
+                  </div>
+
+                  <a
+                    href={process.env.NEXT_PUBLIC_API_URL + '/api/admin/export-csv'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Export Participants CSV
+                  </a>
                 </div>
 
-                <a
-                  href={process.env.NEXT_PUBLIC_API_URL + '/api/admin/export-csv'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <FileDown className="h-4 w-4" />
-                  Export Participants CSV
-                </a>
+                {/* Filter Pills */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase mr-1">Filter by Status:</span>
+                  {[
+                    { id: 'all', label: 'All Registrations' },
+                    { id: 'confirmed', label: 'Confirmed (Paid)' },
+                    { id: 'submitted', label: 'Phase 1 Details Submitted (Unpaid)' },
+                    { id: 'failed', label: 'Payment Failed / Cancelled' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setParticipantFilter(f.id as any)}
+                      className={`px-3 py-1 rounded-lg text-xxs font-bold transition-all cursor-pointer ${
+                        participantFilter === f.id
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Participants table */}
               <div className="glass-panel border-white/5 rounded-2xl overflow-x-auto custom-scrollbar">
-                <table className="w-full min-w-[700px] border-collapse text-xs text-left">
+                <table className="w-full min-w-[850px] border-collapse text-xs text-left">
                   <thead>
-                    <tr className="border-b border-white/5 text-zinc-500 font-bold uppercase tracking-wider">
-                      <th className="px-5 py-4">Attendee Name</th>
-                      <th className="px-5 py-4">Email / College</th>
-                      <th className="px-5 py-4">Payment</th>
-                      <th className="px-5 py-4">Attendance Check-in</th>
-                      <th className="px-5 py-4 text-center">Action</th>
+                    <tr className="border-b border-white/5 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="px-4 py-3.5">Registration ID</th>
+                      <th className="px-4 py-3.5">Attendee & Contact</th>
+                      <th className="px-4 py-3.5">College & Branch</th>
+                      <th className="px-4 py-3.5">Phase & Status</th>
+                      <th className="px-4 py-3.5">Payment</th>
+                      <th className="px-4 py-3.5">Check-in</th>
+                      <th className="px-4 py-3.5 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {participantsLoading ? (
                       [1, 2, 3].map(row => (
                         <tr key={row} className="border-b border-white/5 animate-pulse">
-                          <td className="px-5 py-4"><div className="h-4 bg-white/5 rounded w-24"></div></td>
-                          <td className="px-5 py-4"><div className="h-4 bg-white/5 rounded w-36"></div></td>
-                          <td className="px-5 py-4"><div className="h-4 bg-white/5 rounded w-16"></div></td>
-                          <td className="px-5 py-4"><div className="h-4 bg-white/5 rounded w-20"></div></td>
-                          <td className="px-5 py-4"><div className="h-6 bg-white/5 rounded w-16 mx-auto"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-20"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-32"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-28"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-24"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-16"></div></td>
+                          <td className="px-4 py-4"><div className="h-4 bg-white/5 rounded w-16"></div></td>
+                          <td className="px-4 py-4"><div className="h-6 bg-white/5 rounded w-16 mx-auto"></div></td>
                         </tr>
                       ))
                     ) : participants.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-12 text-zinc-500">
-                          No registered participants found matching search query.
+                        <td colSpan={7} className="text-center py-12 text-zinc-500">
+                          No participants found matching the selected filter or search query.
                         </td>
                       </tr>
                     ) : (
                       participants.map((item) => (
                         <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
-                          <td className="px-5 py-4 font-bold text-zinc-200">{item.name}</td>
-                          <td className="px-5 py-4 space-y-0.5">
-                            <span className="block text-zinc-300 font-mono text-[10px]">{item.email}</span>
-                            <span className="block text-zinc-500 text-[10px]">{item.college}</span>
+                          {/* Registration ID */}
+                          <td className="px-4 py-4 font-mono font-bold text-purple-300 text-xs">
+                            {item.registrationId || `DT26-${item.id.substring(0, 6).toUpperCase()}`}
                           </td>
-                          <td className="px-5 py-4">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold ${
-                              item.paymentStatus === 'paid' 
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+
+                          {/* Attendee Name & Contact */}
+                          <td className="px-4 py-4 space-y-0.5">
+                            <span className="font-bold text-zinc-100 block text-xs">{item.name}</span>
+                            <span className="block text-zinc-400 font-mono text-[10px]">{item.email}</span>
+                            {item.phone && <span className="block text-zinc-500 text-[10px]">{item.phone}</span>}
+                          </td>
+
+                          {/* College & Branch */}
+                          <td className="px-4 py-4 space-y-0.5">
+                            <span className="block text-zinc-200 text-[11px] font-medium">{item.college}</span>
+                            <span className="block text-zinc-500 text-[10px]">{item.branch} • {item.year}</span>
+                          </td>
+
+                          {/* Registration Phase & Status */}
+                          <td className="px-4 py-4">
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wide uppercase ${
+                                item.registrationStatus === 'CONFIRMED' || item.paymentStatus === 'paid'
+                                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                  : item.registrationStatus === 'PAYMENT_PENDING'
+                                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                  : item.registrationStatus === 'PAYMENT_FAILED' || item.paymentStatus === 'failed'
+                                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                                  : 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                              }`}>
+                                {item.registrationStatus || (item.paymentStatus === 'paid' ? 'CONFIRMED' : 'DETAILS_SUBMITTED')}
+                              </span>
+                              <span className="text-[9px] text-zinc-500">
+                                Phase: {item.currentPhase || (item.paymentStatus === 'paid' ? 'CONFIRMATION' : 'PAYMENT')}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Payment breakdown */}
+                          <td className="px-4 py-4 space-y-0.5">
+                            <span className={`font-mono text-xs font-bold block ${
+                              item.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-zinc-400'
                             }`}>
-                              {item.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                              {item.paymentStatus === 'paid' ? `₹${item.amountPaid || 1000}` : '₹0'}
                             </span>
+                            {item.couponUsed && (
+                              <span className="block text-[9px] text-purple-400 font-mono">
+                                Coupon: {item.couponUsed}
+                              </span>
+                            )}
                           </td>
-                          <td className="px-5 py-4">
+
+                          {/* Check-in */}
+                          <td className="px-4 py-4">
                             {item.checkedIn ? (
-                              <span className="text-emerald-400 flex items-center gap-1">
-                                <CheckCircle2 className="h-4 w-4" />
+                              <span className="text-emerald-400 flex items-center gap-1 text-[11px] font-semibold">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
                                 Checked In
                               </span>
                             ) : (
-                              <span className="text-zinc-500">Absent</span>
+                              <span className="text-zinc-500 text-[11px]">Pending</span>
                             )}
                           </td>
-                          <td className="px-5 py-4 text-center">
-                            {item.paymentStatus === 'paid' && !item.checkedIn && (
-                              <button
-                                onClick={() => handleCheckIn(item.id)}
-                                className="px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg text-[10px] cursor-pointer transition-all"
-                              >
-                                Check In
-                              </button>
+
+                          {/* Action */}
+                          <td className="px-4 py-4 text-center">
+                            {(item.paymentStatus === 'paid' || item.registrationStatus === 'CONFIRMED') && !item.checkedIn && (
+                              isViewerAdmin ? (
+                                <span className="text-zinc-500 font-mono text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/5">
+                                  Observer
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleCheckIn(item.id)}
+                                  className="px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg text-[10px] cursor-pointer transition-all"
+                                >
+                                  Check In
+                                </button>
+                              )
                             )}
-                            {item.paymentStatus === 'paid' && item.checkedIn && (
-                              <span className="text-zinc-600 font-mono text-[9px]">
+                            {(item.paymentStatus === 'paid' || item.registrationStatus === 'CONFIRMED') && item.checkedIn && (
+                              <span className="text-zinc-500 font-mono text-[9px]">
                                 {item.checkInTime ? new Date(item.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Verified'}
                               </span>
                             )}
-                            {item.paymentStatus !== 'paid' && (
+                            {item.paymentStatus !== 'paid' && item.registrationStatus !== 'CONFIRMED' && (
                               <span className="text-zinc-600 font-mono text-[9px]">Unpaid</span>
                             )}
                           </td>
@@ -740,10 +975,17 @@ export default function AdminDashboard() {
                   <div className="glass-panel border-white/5 rounded-2xl p-5">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Choose Attendee to Scan</h3>
                     <div className="space-y-4">
+                      {isViewerAdmin && (
+                        <div className="p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-300 text-xs flex gap-2 items-center">
+                          <Lock className="h-4 w-4 flex-shrink-0" />
+                          <span>Attendance check-in is disabled in Read-Only Observer mode.</span>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-[10px] text-zinc-500 uppercase mb-1.5 font-bold">Select Participant</label>
                         <select
                           value={selectedScannerUser}
+                          disabled={isViewerAdmin}
                           onChange={(e) => setSelectedScannerUser(e.target.value)}
                           className="w-full py-2 px-3 pr-8 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs appearance-none cursor-pointer"
                         >
@@ -807,100 +1049,112 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 {/* Coupon creation form */}
-                <div className="glass-panel border-white/5 rounded-2xl p-6">
-                  <h3 className="text-sm font-bold text-white mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
-                    <Plus className="h-4.5 w-4.5 text-purple-400" />
-                    Register Promo Coupon
-                  </h3>
-
-                  <form onSubmit={handleCreateCoupon} className="space-y-4">
-                    <div>
-                      <label htmlFor="code" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Promo Code</label>
-                      <input
-                        id="code"
-                        type="text"
-                        required
-                        placeholder="e.g. HYD30"
-                        value={newCouponForm.code}
-                        onChange={(e) => setNewCouponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                        className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
-                      />
+                {isViewerAdmin ? (
+                  <div className="glass-panel border-amber-500/20 bg-amber-500/5 rounded-2xl p-6 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-400">
+                      <Lock className="h-4.5 w-4.5" />
+                      <h3 className="text-sm font-bold">Read-Only Observer Mode</h3>
                     </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      You are signed in as a Viewer (<strong className="text-white">{user?.email}</strong>). You can monitor promo coupon codes and redemption metrics, but creating or modifying coupons is restricted to Super Administrators.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="glass-panel border-white/5 rounded-2xl p-6">
+                    <h3 className="text-sm font-bold text-white mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
+                      <Plus className="h-4.5 w-4.5 text-purple-400" />
+                      Register Promo Coupon
+                    </h3>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <form onSubmit={handleCreateCoupon} className="space-y-4">
                       <div>
-                        <label htmlFor="discountType" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Type</label>
-                        <select
-                          id="discountType"
-                          value={newCouponForm.discountType}
-                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, discountType: e.target.value }))}
-                          className="block w-full px-3 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs"
-                        >
-                          <option value="percentage">% Percent</option>
-                          <option value="fixed">Fixed (₹)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="discountValue" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Val</label>
+                        <label htmlFor="code" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Promo Code</label>
                         <input
-                          id="discountValue"
-                          type="number"
+                          id="code"
+                          type="text"
                           required
-                          placeholder="e.g. 50"
-                          value={newCouponForm.discountValue}
-                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, discountValue: e.target.value }))}
+                          placeholder="e.g. HYD30"
+                          value={newCouponForm.code}
+                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
                           className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label htmlFor="collegeName" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">College Restrict (Opt)</label>
-                      <input
-                        id="collegeName"
-                        type="text"
-                        placeholder="e.g. JNTUH"
-                        value={newCouponForm.collegeName}
-                        onChange={(e) => setNewCouponForm(prev => ({ ...prev, collegeName: e.target.value }))}
-                        className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
-                      />
-                    </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label htmlFor="discountType" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Type</label>
+                          <select
+                            id="discountType"
+                            value={newCouponForm.discountType}
+                            onChange={(e) => setNewCouponForm(prev => ({ ...prev, discountType: e.target.value }))}
+                            className="block w-full px-3 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs"
+                          >
+                            <option value="percentage">% Percent</option>
+                            <option value="fixed">Fixed (₹)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="discountValue" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Val</label>
+                          <input
+                            id="discountValue"
+                            type="number"
+                            required
+                            placeholder="e.g. 50"
+                            value={newCouponForm.discountValue}
+                            onChange={(e) => setNewCouponForm(prev => ({ ...prev, discountValue: e.target.value }))}
+                            className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
+                          />
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label htmlFor="usageLimit" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Limit</label>
+                        <label htmlFor="collegeName" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">College Restrict (Opt)</label>
                         <input
-                          id="usageLimit"
-                          type="number"
-                          required
-                          placeholder="100"
-                          value={newCouponForm.usageLimit}
-                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, usageLimit: e.target.value }))}
+                          id="collegeName"
+                          type="text"
+                          placeholder="e.g. JNTUH"
+                          value={newCouponForm.collegeName}
+                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, collegeName: e.target.value }))}
                           className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
                         />
                       </div>
-                      <div>
-                        <label htmlFor="expiryDate" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Expiry</label>
-                        <input
-                          id="expiryDate"
-                          type="date"
-                          required
-                          value={newCouponForm.expiryDate}
-                          onChange={(e) => setNewCouponForm(prev => ({ ...prev, expiryDate: e.target.value }))}
-                          className="block w-full px-3 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-[10px]"
-                        />
-                      </div>
-                    </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      Create Coupon Code
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </form>
-                </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label htmlFor="usageLimit" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Limit</label>
+                          <input
+                            id="usageLimit"
+                            type="number"
+                            required
+                            placeholder="100"
+                            value={newCouponForm.usageLimit}
+                            onChange={(e) => setNewCouponForm(prev => ({ ...prev, usageLimit: e.target.value }))}
+                            className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="expiryDate" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1 pl-1">Expiry</label>
+                          <input
+                            id="expiryDate"
+                            type="date"
+                            required
+                            value={newCouponForm.expiryDate}
+                            onChange={(e) => setNewCouponForm(prev => ({ ...prev, expiryDate: e.target.value }))}
+                            className="block w-full px-3 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-[10px]"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        Create Coupon Code
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </form>
+                  </div>
+                )}
 
                 {/* Coupons list */}
                 <div className="lg:col-span-2 glass-panel border-white/5 rounded-2xl p-6">
@@ -935,8 +1189,10 @@ export default function AdminDashboard() {
                           </div>
 
                           <button
-                            onClick={() => handleToggleCoupon(c.id)}
-                            className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                            onClick={() => !isViewerAdmin && handleToggleCoupon(c.id)}
+                            disabled={isViewerAdmin}
+                            className={`p-1 text-zinc-400 hover:text-white transition-colors ${isViewerAdmin ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                            title={isViewerAdmin ? 'Toggling disabled for Viewers' : 'Toggle status'}
                           >
                             {c.isActive ? (
                               <ToggleRight className="h-7 w-7 text-emerald-500" />
@@ -959,54 +1215,66 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 {/* Merge Teams Action box */}
-                <div className="glass-panel border-white/5 rounded-2xl p-6 h-fit">
-                  <h3 className="text-sm font-bold text-white mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
-                    <GitMerge className="h-4.5 w-4.5 text-pink-400 animate-pulse" />
-                    Merge Small Teams
-                  </h3>
-                  <p className="text-xxs text-zinc-500 leading-normal mb-4">
-                    Merge members of two small teams. Combine members under Team A. Maximum combined members allowed is 4.
-                  </p>
-
-                  <form onSubmit={handleMergeTeams} className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Primary Team A (Keep)</label>
-                      <select
-                        value={mergeTeamA}
-                        onChange={(e) => setMergeTeamA(e.target.value)}
-                        className="w-full py-2 px-3 pr-8 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs appearance-none cursor-pointer"
-                      >
-                        <option value="">-- Choose Team A --</option>
-                        {adminTeams
-                          .filter(t => t.memberCount < 4)
-                          .map(t => <option key={t.id} value={t.id}>{t.name} ({t.memberCount} members)</option>)}
-                      </select>
+                {isViewerAdmin ? (
+                  <div className="glass-panel border-amber-500/20 bg-amber-500/5 rounded-2xl p-6 space-y-3 h-fit">
+                    <div className="flex items-center gap-2 text-amber-400">
+                      <Lock className="h-4.5 w-4.5" />
+                      <h3 className="text-sm font-bold">Read-Only Observer Mode</h3>
                     </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      You are signed in as a Viewer (<strong className="text-white">{user?.email}</strong>). You can monitor all registered design teams and team compositions, but merging or dissolving teams is restricted to Super Administrators.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="glass-panel border-white/5 rounded-2xl p-6 h-fit">
+                    <h3 className="text-sm font-bold text-white mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
+                      <GitMerge className="h-4.5 w-4.5 text-pink-400 animate-pulse" />
+                      Merge Small Teams
+                    </h3>
+                    <p className="text-xxs text-zinc-500 leading-normal mb-4">
+                      Merge members of two small teams. Combine members under Team A. Maximum combined members allowed is 4.
+                    </p>
 
-                    <div>
-                      <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Secondary Team B (Merge & Dissolve)</label>
-                      <select
-                        value={mergeTeamB}
-                        onChange={(e) => setMergeTeamB(e.target.value)}
-                        className="w-full py-2 px-3 pr-8 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs appearance-none cursor-pointer"
+                    <form onSubmit={handleMergeTeams} className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Primary Team A (Keep)</label>
+                        <select
+                          value={mergeTeamA}
+                          onChange={(e) => setMergeTeamA(e.target.value)}
+                          className="w-full py-2 px-3 pr-8 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs appearance-none cursor-pointer"
+                        >
+                          <option value="">-- Choose Team A --</option>
+                          {adminTeams
+                            .filter(t => t.memberCount < 4)
+                            .map(t => <option key={t.id} value={t.id}>{t.name} ({t.memberCount} members)</option>)}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Secondary Team B (Merge & Dissolve)</label>
+                        <select
+                          value={mergeTeamB}
+                          onChange={(e) => setMergeTeamB(e.target.value)}
+                          className="w-full py-2 px-3 pr-8 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs appearance-none cursor-pointer"
+                        >
+                          <option value="">-- Choose Team B --</option>
+                          {adminTeams
+                            .filter(t => t.memberCount < 4 && t.id !== mergeTeamA)
+                            .map(t => <option key={t.id} value={t.id}>{t.name} ({t.memberCount} members)</option>)}
+                        </select>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={!mergeTeamA || !mergeTeamB}
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
-                        <option value="">-- Choose Team B --</option>
-                        {adminTeams
-                          .filter(t => t.memberCount < 4 && t.id !== mergeTeamA)
-                          .map(t => <option key={t.id} value={t.id}>{t.name} ({t.memberCount} members)</option>)}
-                      </select>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={!mergeTeamA || !mergeTeamB}
-                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                    >
-                      Authorize Merge Operation
-                      <GitMerge className="h-4 w-4" />
-                    </button>
-                  </form>
-                </div>
+                        Authorize Merge Operation
+                        <GitMerge className="h-4 w-4" />
+                      </button>
+                    </form>
+                  </div>
+                )}
 
                 {/* Registered Teams list */}
                 <div className="lg:col-span-2 glass-panel border-white/5 rounded-2xl p-6">
@@ -1039,13 +1307,15 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => handleDeleteTeam(t.id, t.name)}
-                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                            title="Dissolve Team"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          {!isViewerAdmin && (
+                            <button
+                              onClick={() => handleDeleteTeam(t.id, t.name)}
+                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              title="Dissolve Team"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       ))
                     )}
@@ -1066,90 +1336,102 @@ export default function AdminDashboard() {
                 Broadcast notification triggers alerts to target recipient categories and displays toast alerts instantly using Socket.IO.
               </p>
 
-              <form onSubmit={handleSendBroadcast} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="recipientType" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Target Category</label>
-                    <select
-                      id="recipientType"
-                      value={broadcastForm.recipientType}
-                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, recipientType: e.target.value }))}
-                      className="w-full py-2 px-3 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs cursor-pointer"
-                    >
-                      <option value="all">All Registered Participants</option>
-                      <option value="college">Specific College Hub</option>
-                      <option value="team">Specific Design Team ID</option>
-                      <option value="individual">Individual Attendee ID</option>
-                    </select>
+              {isViewerAdmin ? (
+                <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-amber-300 text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold">
+                    <Lock className="h-4 w-4" />
+                    <span>Broadcasting Restricted</span>
                   </div>
-                  <div>
-                    <label htmlFor="channel" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Notification Medium</label>
-                    <select
-                      id="channel"
-                      value={broadcastForm.channel}
-                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, channel: e.target.value }))}
-                      className="w-full py-2 px-3 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs cursor-pointer"
-                    >
-                      <option value="email">Simulate Email Dispatch</option>
-                      <option value="sms">Simulate SMS Alert</option>
-                      <option value="push">Live Push Notification (Toast)</option>
-                    </select>
-                  </div>
+                  <p className="text-zinc-400 leading-relaxed text-xxs">
+                    Only Super Administrators have authorization to dispatch broadcast emails or push notifications to participants.
+                  </p>
                 </div>
+              ) : (
+                <form onSubmit={handleSendBroadcast} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="recipientType" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Target Category</label>
+                      <select
+                        id="recipientType"
+                        value={broadcastForm.recipientType}
+                        onChange={(e) => setBroadcastForm(prev => ({ ...prev, recipientType: e.target.value }))}
+                        className="w-full py-2 px-3 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs cursor-pointer"
+                      >
+                        <option value="all">All Registered Participants</option>
+                        <option value="college">Specific College Hub</option>
+                        <option value="team">Specific Design Team ID</option>
+                        <option value="individual">Individual Attendee ID</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="channel" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Notification Medium</label>
+                      <select
+                        id="channel"
+                        value={broadcastForm.channel}
+                        onChange={(e) => setBroadcastForm(prev => ({ ...prev, channel: e.target.value }))}
+                        className="w-full py-2 px-3 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-300 focus:outline-none focus:border-purple-500/50 text-xs cursor-pointer"
+                      >
+                        <option value="email">Simulate Email Dispatch</option>
+                        <option value="sms">Simulate SMS Alert</option>
+                        <option value="push">Live Push Notification (Toast)</option>
+                      </select>
+                    </div>
+                  </div>
 
-                {broadcastForm.recipientType !== 'all' && (
+                  {broadcastForm.recipientType !== 'all' && (
+                    <div>
+                      <label htmlFor="recipientTarget" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Recipient Identifier Target</label>
+                      <input
+                        id="recipientTarget"
+                        type="text"
+                        required
+                        placeholder={
+                          broadcastForm.recipientType === 'college' ? 'e.g. JNTUH' :
+                          broadcastForm.recipientType === 'team' ? 'e.g. figma-wizards-2a1c' : 'e.g. Attendee User ID'
+                        }
+                        value={broadcastForm.recipientTarget}
+                        onChange={(e) => setBroadcastForm(prev => ({ ...prev, recipientTarget: e.target.value }))}
+                        className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs"
+                      />
+                    </div>
+                  )}
+
                   <div>
-                    <label htmlFor="recipientTarget" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Recipient Identifier Target</label>
+                    <label htmlFor="broadcast-title" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Message Header Title</label>
                     <input
-                      id="recipientTarget"
+                      id="broadcast-title"
                       type="text"
                       required
-                      placeholder={
-                        broadcastForm.recipientType === 'college' ? 'e.g. JNTUH' :
-                        broadcastForm.recipientType === 'team' ? 'e.g. figma-wizards-2a1c' : 'e.g. Attendee User ID'
-                      }
-                      value={broadcastForm.recipientTarget}
-                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, recipientTarget: e.target.value }))}
+                      placeholder="e.g. Prompt Reveal Starts in 10 mins"
+                      value={broadcastForm.title}
+                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, title: e.target.value }))}
                       className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs"
                     />
                   </div>
-                )}
 
-                <div>
-                  <label htmlFor="broadcast-title" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Message Header Title</label>
-                  <input
-                    id="broadcast-title"
-                    type="text"
-                    required
-                    placeholder="e.g. Prompt Reveal Starts in 10 mins"
-                    value={broadcastForm.title}
-                    onChange={(e) => setBroadcastForm(prev => ({ ...prev, title: e.target.value }))}
-                    className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs"
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="broadcast-msg" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Detailed Content Message</label>
+                    <textarea
+                      id="broadcast-msg"
+                      required
+                      rows={4}
+                      placeholder="Describe detail updates or instructions for participants..."
+                      value={broadcastForm.message}
+                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, message: e.target.value }))}
+                      className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs custom-scrollbar"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="broadcast-msg" className="block text-[10px] text-zinc-500 uppercase font-bold mb-1.5 pl-1">Detailed Content Message</label>
-                  <textarea
-                    id="broadcast-msg"
-                    required
-                    rows={4}
-                    placeholder="Describe detail updates or instructions for participants..."
-                    value={broadcastForm.message}
-                    onChange={(e) => setBroadcastForm(prev => ({ ...prev, message: e.target.value }))}
-                    className="block w-full px-4 py-2.5 rounded-xl border border-white/5 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs custom-scrollbar"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={broadcastLoading}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  {broadcastLoading ? 'Dispatching notifications...' : 'Broadcast Message Notification'}
-                  <Radio className="h-4 w-4" />
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={broadcastLoading}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {broadcastLoading ? 'Dispatching notifications...' : 'Broadcast Message Notification'}
+                    <Radio className="h-4 w-4" />
+                  </button>
+                </form>
+              )}
             </div>
           )}
 

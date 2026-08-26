@@ -478,7 +478,7 @@ export default function UserDashboard() {
               <div className="glass-panel border-white/5 rounded-2xl p-6 backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                    Welcome to DESIGNTHON 2026!
+                    Welcome to DESIGNATHON 2026!
                     <Sparkles className="h-4.5 w-4.5 text-purple-400" />
                   </h1>
                   <p className="text-xs text-zinc-400 mt-1 max-w-xl">
@@ -853,7 +853,7 @@ export default function UserDashboard() {
 
                 <div className="flex justify-between items-start border-b border-white/5 pb-4 mb-4 text-left">
                   <div>
-                    <h2 className="text-base font-bold text-white tracking-widest font-mono">DESIGNTHON 2026</h2>
+                    <h2 className="text-base font-bold text-white tracking-widest font-mono">DESIGNATHON 2026</h2>
                     <p className="text-[10px] text-zinc-500 mt-0.5">Cohort, Hyderabad, India</p>
                   </div>
                   <div className="text-right">
@@ -948,7 +948,7 @@ export default function UserDashboard() {
                       <span className="text-[10px] text-yellow-400 font-bold uppercase tracking-widest font-mono">CERTIFICATE OF PARTICIPATION</span>
                       
                       <div className="space-y-2">
-                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-300 to-amber-200 tracking-wide font-serif">DESIGNTHON 2026</h1>
+                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-300 to-amber-200 tracking-wide font-serif">DESIGNATHON 2026</h1>
                         <p className="text-[10px] text-zinc-500 uppercase tracking-wider">COHORT, HYDERABAD, INDIA</p>
                       </div>
 
@@ -958,7 +958,7 @@ export default function UserDashboard() {
                         </p>
                         <h2 className="text-xl font-bold text-white border-b border-white/10 pb-2 max-w-xs mx-auto tracking-wide">{user.name}</h2>
                         <p className="text-xs text-zinc-400 leading-relaxed">
-                          from <strong className="text-zinc-300 font-semibold">{user.college}</strong> has been successfully recognized for participation and contribution in the 2-day design hackathon at DESIGNTHON 2026.
+                          from <strong className="text-zinc-300 font-semibold">{user.college}</strong> has been successfully recognized for participation and contribution in the 2-day design hackathon at DESIGNATHON 2026.
                         </p>
                       </div>
 

@@ -106,7 +106,7 @@ export default function LoginPage() {
 
           {/* Heading */}
           <div className="text-center mb-8">
-            <h1 className="text-xl font-bold text-white tracking-tight">Sign in to DESIGNTHON</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">Sign in to DESIGNATHON</h1>
             <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
               Use your Google account to access your dashboard,<br />register, and manage your team.
             </p>
@@ -147,13 +147,13 @@ export default function LoginPage() {
           </button>
 
           <p className="text-[10px] text-zinc-650 text-center mt-5 leading-relaxed">
-            New to DESIGNTHON? Google sign-in will guide you through registration.
+            New to DESIGNATHON? Google sign-in will guide you through registration.
           </p>
         </div>
 
         {/* Footer */}
         <p className="text-center text-[10px] text-zinc-700 mt-6">
-          DESIGNTHON 2026 · Hyderabad's First UI/UX Hackathon
+          DESIGNATHON 2026 · Hyderabad's First UI/UX Hackathon
         </p>
       </div>
     </div>

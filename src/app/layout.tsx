@@ -12,8 +12,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "DESIGNTHON 2026 | Hyderabad's Premier UI/UX Hackathon",
-  description: "Register for DESIGNTHON, Hyderabad's premier UI/UX Design Hackathon. Showcase your creative UI design capabilities, team up, win prizes, and learn from industry mentors.",
+  title: "DESIGNATHON 2026 | Hyderabad's Premier UI/UX Hackathon",
+  description: "Register for DESIGNATHON, Hyderabad's premier UI/UX Design Hackathon. Showcase your creative UI design capabilities, team up, win prizes, and learn from industry mentors.",
 };
 
 export default function RootLayout({
