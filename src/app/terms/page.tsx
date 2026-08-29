@@ -52,7 +52,14 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">5. Limitation of Liability</h2>
+            <h2 className="text-lg font-bold text-white">5. Accommodation Policy</h2>
+            <p>
+              Free accommodation is provided exclusively per team for complete teams consisting of 3 to 4 members traveling from outside the state. Accommodation is strictly not provided for individual participants or local attendees.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-bold text-white">6. Limitation of Liability</h2>
             <p>
               DESIGNATHON organizers, partner firms (ArtArtist, Value Laden), and venue hosts (Samskruti College) are not liable for any direct, indirect, incidental, or consequential damages resulting from your participation in the hackathon.
             </p>

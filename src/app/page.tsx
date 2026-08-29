@@ -75,6 +75,7 @@ const HIGHLIGHTS = [
   'Design Thinking & Prototyping',
   'Expert Speaker Sessions & Mentorship',
   'Team Collaboration (3–4 Members)',
+  'Accommodation Provided for Out-of-State Teams (3–4 Members)',
   'Live Jury Pitches & Demos',
   '₹20,000 Cash Prize Pool',
   'Delicious Food Provided Both Days'
@@ -86,6 +87,7 @@ const INCLUSIONS = [
   'Figma & Design Thinking Masterclasses',
   '1-on-1 Mentorship from Industry Leads',
   'Participation in ₹20,000 Prize Pool',
+  'Accommodation for Out-of-State Teams (3–4 Members)',
   'Internship Opportunities with Partners',
   'Verified Participation Certificate',
   'Team Collaboration & Networking',
@@ -95,6 +97,7 @@ const INCLUSIONS = [
 // FAQ items
 const FAQS = [
   { q: 'What is the schedule for the 2 days?', a: 'Day 1 (12 Sept) is an intensive, hands-on UI/UX Design Workshop covering Figma, Design Thinking, UX Research, and mentorship from industry leads. Day 2 (13 Sept) is the full-day UI/UX Hackathon where teams build interactive prototypes for live problem statements and present to jury judges.' },
+  { q: 'Is accommodation provided for out-of-state teams?', a: 'Yes! Accommodation is provided per team for teams of 3–4 members joining from outside the state. Please note that accommodation is provided exclusively for full teams of 3–4 members and is NOT provided for individual registrants or local attendees.' },
   { q: 'Can I participate individually?', a: 'Yes. Register individually first and then log in to create or join a team of 3-4 members.' },
   { q: 'How many members are allowed in a team?', a: 'Teams must consist of 3-4 members. You can form your team anytime before the hackathon begins.' },
   { q: 'Is the registration pass individual?', a: 'Yes. Every participant registers individually, which covers full 2-day access (Day 1 Workshop + Day 2 Hackathon), food, mentorship, and certificates.' },
@@ -732,6 +735,7 @@ export default function LandingPage() {
                   'Minimum 3 members',
                   'One team leader',
                   'One registration per participant',
+                  'Accommodation provided for out-of-state teams (3–4 members, not for individuals)',
                   'Team changes close before the event',
                   'All members must complete payment'
                 ].map((rule, i) => (

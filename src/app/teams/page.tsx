@@ -254,6 +254,12 @@ export default function TeamsPage() {
               : 'Browse participants registered for DESIGNATHON 2026. Explore attendees from top colleges and connect with future teammates.'}
           </p>
 
+          {/* Accommodation Notice */}
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium max-w-xl mx-auto text-left">
+            <Sparkles className="h-4 w-4 text-purple-400 flex-shrink-0" />
+            <span><strong>Accommodation Note:</strong> Free accommodation is provided per team for teams of 3–4 members joining from outside the state (not provided for individual participants).</span>
+          </div>
+
           {/* Section Switcher Tabs */}
           <div className="flex justify-center mt-8">
             <div className="inline-flex p-1 rounded-2xl border border-white/10 bg-[#070719]/80 backdrop-blur-xl shadow-2xl">

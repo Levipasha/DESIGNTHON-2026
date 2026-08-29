@@ -567,8 +567,7 @@ function RegisterForm() {
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">DESIGNATHON 2026 Registration</h1>
               <p className="text-xs text-zinc-400 mt-1">₹1000 all-inclusive individual fee • Teams formed after confirmation.</p>
-              
-              {/* Event inclusion pills */}
+                   {/* Event inclusion pills */}
               <div className="mt-4 p-3 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-around gap-2 text-left sm:text-center text-[11px]">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-400" />
@@ -582,8 +581,14 @@ function RegisterForm() {
                 <span className="hidden sm:inline text-zinc-600">•</span>
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span className="text-zinc-300 font-medium">Food & Certificate</span>
+                  <span className="text-zinc-300 font-medium">Food & Certificates</span>
                 </div>
+              </div>
+
+              {/* Accommodation Notice */}
+              <div className="mt-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs flex items-center gap-2.5 text-left">
+                <Sparkles className="h-4 w-4 text-purple-400 flex-shrink-0" />
+                <span><strong>Accommodation Info:</strong> Free accommodation is provided per team for teams of 3–4 members joining from outside the state (not provided for individual registrants).</span>
               </div>
             </div>
 
