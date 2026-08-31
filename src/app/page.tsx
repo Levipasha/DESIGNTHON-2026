@@ -874,15 +874,15 @@ export default function LandingPage() {
             </div>
             <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
               <span className="text-[10px] text-zinc-500 uppercase font-bold">Helpline</span>
-              <a href="tel:+919912937061" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 9912937061</a>
+              <a href="tel:+918121422761" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 81214 22761</a>
+            </div>
+            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Rabbani</span>
+              <a href="tel:+919912937061" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 99129 37061</a>
             </div>
             <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
               <span className="text-[10px] text-zinc-500 uppercase font-bold">Vamshi</span>
               <a href="tel:+918341339097" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 83413 39097</a>
-            </div>
-            <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold">Arpan</span>
-              <a href="tel:+918121422761" className="block font-semibold text-zinc-200 mt-1 hover:text-white">+91 81214 22761</a>
             </div>
             <div className="p-4 rounded-xl border border-white/5 bg-[#050514]/40 flex flex-col justify-center">
               <span className="text-[10px] text-zinc-500 uppercase font-bold">Kalyan</span>

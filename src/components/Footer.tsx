@@ -62,10 +62,10 @@ export default function Footer() {
             <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Contact Support</h3>
             <ul className="space-y-1.5 text-xs text-zinc-500">
               <li>Email: <a href="mailto:official@skywebdev.xyz" className="text-zinc-400 hover:text-white transition-colors">official@skywebdev.xyz</a></li>
-              <li>Helpline: <a href="tel:+919912937061" className="text-zinc-400 hover:text-white transition-colors">+91 9912937061</a></li>
+              <li>Helpline: <a href="tel:+918121422761" className="text-zinc-400 hover:text-white transition-colors">+91 81214 22761</a></li>
               <li className="pt-2 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Team Contacts:</li>
+              <li className="text-[11px]"><span className="text-zinc-400">Rabbani:</span> <a href="tel:+919912937061" className="text-zinc-300 hover:text-white transition-colors">+91 99129 37061</a></li>
               <li className="text-[11px]"><span className="text-zinc-400">Vamshi:</span> <a href="tel:+918341339097" className="text-zinc-300 hover:text-white transition-colors">+91 83413 39097</a></li>
-              <li className="text-[11px]"><span className="text-zinc-400">Arpan:</span> <a href="tel:+918121422761" className="text-zinc-300 hover:text-white transition-colors">+91 81214 22761</a></li>
               <li className="text-[11px]"><span className="text-zinc-400">Kalyan:</span> <a href="tel:+917396566279" className="text-zinc-300 hover:text-white transition-colors">+91 7396 566 279</a></li>
               <li className="text-[11px]"><span className="text-zinc-400">Arun:</span> <a href="tel:+918897959612" className="text-zinc-300 hover:text-white transition-colors">+91 88979 59612</a></li>
               <li className="text-[11px]"><span className="text-zinc-400">Vicky:</span> <a href="tel:+917396514989" className="text-zinc-300 hover:text-white transition-colors">+91 7396 514 989</a></li>
