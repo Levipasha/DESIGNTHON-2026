@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Sparkles, User, Mail, Phone, School, BookOpen, Calendar, 
   Globe, Ticket, CreditCard, CheckCircle2, ShieldAlert, 
-  Download, ArrowRight, ArrowLeft, RefreshCw, Check, Loader2, Tag
+  Download, ArrowRight, ArrowLeft, RefreshCw, Check, Loader2, Tag, Building2
 } from 'lucide-react';
 
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -43,7 +43,8 @@ function RegisterForm() {
     year: '1st Year',
     gender: 'Male',
     linkedin: '',
-    portfolio: ''
+    portfolio: '',
+    accommodation: 'no' // 'no' (₹649) | 'yes' (₹999)
   });
 
   // Validation Errors
@@ -91,7 +92,8 @@ function RegisterForm() {
           year: prev.year || user.year || '1st Year',
           gender: prev.gender || user.gender || 'Male',
           linkedin: prev.linkedin || user.linkedin || '',
-          portfolio: prev.portfolio || user.portfolio || ''
+          portfolio: prev.portfolio || user.portfolio || '',
+          accommodation: (user as any).accommodation || prev.accommodation || 'no'
         }));
         if (user.registrationId) {
           setRegistrationId(user.registrationId);
@@ -112,6 +114,13 @@ function RegisterForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
+    if (id === 'accommodation' && value === 'no') {
+      // Clear any applied coupon if user switches to without accommodation
+      setAppliedCoupon(null);
+      setCouponCode('');
+      setCouponError('');
+      setCouponSuccess('');
+    }
     if (errors[id]) {
       setErrors(prev => {
         const updated = { ...prev };
@@ -145,9 +154,6 @@ function RegisterForm() {
     }
     if (!formData.branch.trim()) {
       newErrors.branch = 'Branch / Specialization is required';
-    }
-    if (!formData.linkedin.trim()) {
-      newErrors.linkedin = 'LinkedIn profile URL is required';
     }
 
     setErrors(newErrors);
@@ -201,7 +207,7 @@ function RegisterForm() {
     }
   };
 
-  // Validate & Apply Coupon Code
+  // Validate & Apply Coupon Code (only allowed for with accommodation)
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     setCouponLoading(true);
@@ -214,7 +220,8 @@ function RegisterForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           code: couponCode.trim(), 
-          college: formData.college 
+          college: formData.college,
+          accommodation: formData.accommodation
         })
       });
       const data = await res.json();
@@ -240,6 +247,10 @@ function RegisterForm() {
     setCouponSuccess('');
   };
 
+  const isWithAccommodation = formData.accommodation === 'yes' || (user as any)?.accommodation === 'yes';
+  const basePrice = isWithAccommodation ? 999 : 649;
+  const finalPayable = isWithAccommodation && appliedCoupon ? appliedCoupon.finalPrice : basePrice;
+
   // Step 2: Handle Payment (Razorpay or Free 100% Discount)
   const handleInitiatePayment = async () => {
     setErrorMsg('');
@@ -254,9 +265,9 @@ function RegisterForm() {
       return;
     }
 
-    const price = appliedCoupon ? appliedCoupon.finalPrice : 1000;
+    const price = isWithAccommodation && appliedCoupon ? appliedCoupon.finalPrice : basePrice;
 
-    // If 100% discount (₹0 payable)
+    // If 100% discount (₹0 payable - only for with accommodation)
     if (price === 0) {
       try {
         setPaymentStepVerifying();
@@ -277,7 +288,7 @@ function RegisterForm() {
             date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
             amount: 0,
             couponUsed: appliedCoupon.code,
-            discount: 1000,
+            discount: 999,
             paymentId: freeData.user.paymentId,
             registrationId: freeData.user.registrationId || registrationId
           });
@@ -307,7 +318,7 @@ function RegisterForm() {
         },
         body: JSON.stringify({
           amount: price,
-          couponCode: appliedCoupon?.code || undefined
+          couponCode: isWithAccommodation && appliedCoupon?.code ? appliedCoupon.code : undefined
         })
       });
 
@@ -333,7 +344,7 @@ function RegisterForm() {
         amount: orderData.amount,
         currency: orderData.currency || 'INR',
         name: 'DESIGNATHON 2026',
-        description: 'Individual 2-Day Pass Registration',
+        description: isWithAccommodation ? '2-Day Pass with Accommodation' : '2-Day Pass without Accommodation',
         order_id: orderData.id,
         handler: async function (response: any) {
           await handlePaymentVerification(response);
@@ -405,7 +416,7 @@ function RegisterForm() {
     setPaymentNotice('');
 
     const tokenToUse = localStorage.getItem('designthon_token');
-    const finalAmount = appliedCoupon ? appliedCoupon.finalPrice : 1000;
+    const finalAmount = isWithAccommodation && appliedCoupon ? appliedCoupon.finalPrice : basePrice;
 
     try {
       const verifyRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/payments/verify', {
@@ -418,7 +429,7 @@ function RegisterForm() {
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_order_id: response.razorpay_order_id,
           razorpay_signature: response.razorpay_signature,
-          couponCode: appliedCoupon?.code || undefined,
+          couponCode: isWithAccommodation && appliedCoupon?.code ? appliedCoupon.code : undefined,
           amount: finalAmount
         })
       });
@@ -433,8 +444,8 @@ function RegisterForm() {
           receiptNo: `REC-${Math.floor(100000 + Math.random() * 900000)}`,
           date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
           amount: finalAmount,
-          couponUsed: appliedCoupon?.code || 'None',
-          discount: appliedCoupon ? (1000 - appliedCoupon.finalPrice) : 0,
+          couponUsed: isWithAccommodation && appliedCoupon?.code ? appliedCoupon.code : 'None',
+          discount: isWithAccommodation && appliedCoupon ? (999 - appliedCoupon.finalPrice) : 0,
           paymentId: verifyData.user.paymentId,
           registrationId: verifyData.user.registrationId || registrationId
         });
@@ -457,8 +468,6 @@ function RegisterForm() {
   const handlePrint = () => {
     window.print();
   };
-
-  const finalPayable = appliedCoupon ? appliedCoupon.finalPrice : 1000;
 
   return (
     <div className="flex-1 w-full bg-[#03030f] relative overflow-hidden bg-grid flex items-center justify-center py-16 px-4">
@@ -566,7 +575,7 @@ function RegisterForm() {
                 Phase 1: Enter Attendee Details
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">DESIGNATHON 2026 Registration</h1>
-              <p className="text-xs text-zinc-400 mt-1">₹1000 all-inclusive individual fee • Teams formed after confirmation.</p>
+              <p className="text-xs text-zinc-400 mt-1">₹649 without accommodation • ₹999 with accommodation • Teams formed after confirmation.</p>
                    {/* Event inclusion pills */}
               <div className="mt-4 p-3 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-around gap-2 text-left sm:text-center text-[11px]">
                 <div className="flex items-center gap-2">
@@ -588,12 +597,38 @@ function RegisterForm() {
               {/* Accommodation Notice */}
               <div className="mt-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs flex items-center gap-2.5 text-left">
                 <Sparkles className="h-4 w-4 text-purple-400 flex-shrink-0" />
-                <span><strong>Accommodation Info:</strong> Free accommodation is provided per team for teams of 3–4 members joining from outside the state (not provided for individual registrants).</span>
+                <span><strong>Accommodation Info:</strong> Select &quot;With Accommodation&quot; (₹999) if you require stay arrangements (coupons applicable). Select &quot;Without Accommodation&quot; (₹649) for the individual pass.</span>
               </div>
             </div>
 
             <form onSubmit={handlePhase1Submit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                {/* Accommodation Dropdown */}
+                <div className="md:col-span-2">
+                  <label htmlFor="accommodation" className="block text-[11px] font-bold text-zinc-400 mb-1.5 uppercase">
+                    Accommodation Option *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                      <Building2 className="h-4 w-4" />
+                    </span>
+                    <select 
+                      id="accommodation" 
+                      value={formData.accommodation} 
+                      onChange={handleChange} 
+                      className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-[#050514]/60 text-zinc-200 focus:outline-none focus:border-purple-500/50 text-xs"
+                    >
+                      <option value="no" className="bg-[#0b0b1a] text-zinc-300">Without Accommodation — ₹649 (Standard 2-Day Pass)</option>
+                      <option value="yes" className="bg-[#0b0b1a] text-zinc-300">With Accommodation — ₹999 (Pass + Stay Accommodation + Coupon Code Eligible)</option>
+                    </select>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-1 pl-1">
+                    {formData.accommodation === 'yes' 
+                      ? '✓ Includes 2-day event pass, stay accommodation & coupon code discount eligibility.' 
+                      : '✓ Includes 2-day workshop, hackathon, food & certificates (No stay accommodation, no coupon option).'}
+                  </p>
+                </div>
+
                 {/* Full Name */}
                 <div>
                   <label htmlFor="name" className="block text-[11px] font-bold text-zinc-400 mb-1.5 uppercase">Full Name *</label>
@@ -729,9 +764,9 @@ function RegisterForm() {
                   </div>
                 </div>
 
-                {/* LinkedIn */}
+                {/* LinkedIn (Optional) */}
                 <div>
-                  <label htmlFor="linkedin" className="block text-[11px] font-bold text-zinc-400 mb-1.5 uppercase">LinkedIn URL *</label>
+                  <label htmlFor="linkedin" className="block text-[11px] font-bold text-zinc-400 mb-1.5 uppercase">LinkedIn URL (Optional)</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500"><Globe className="h-4 w-4" /></span>
                     <input 
@@ -740,12 +775,9 @@ function RegisterForm() {
                       placeholder="https://linkedin.com/in/aaravsharma" 
                       value={formData.linkedin} 
                       onChange={handleChange} 
-                      className={`block w-full pl-10 pr-4 py-2.5 rounded-xl border bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none text-xs transition-all ${
-                        errors.linkedin ? 'border-rose-500/60 focus:border-rose-500' : 'border-white/10 focus:border-purple-500/50'
-                      }`} 
+                      className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs transition-all" 
                     />
                   </div>
-                  {errors.linkedin && <p className="text-[10px] text-rose-400 mt-1 pl-1">{errors.linkedin}</p>}
                 </div>
               </div>
 
@@ -804,7 +836,11 @@ function RegisterForm() {
                 Phase 2: Payment & Entry Pass Confirmation
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Complete Your Pass Payment</h1>
-              <p className="text-xs text-zinc-400 mt-1">Review your details, apply college coupon codes, and authorize payment.</p>
+              <p className="text-xs text-zinc-400 mt-1">
+                {isWithAccommodation 
+                  ? 'Review your details, apply college coupon codes, and authorize payment.' 
+                  : 'Review your details and authorize payment for the standard 2-day pass.'}
+              </p>
             </div>
 
             {/* Attendee Summary Card */}
@@ -832,73 +868,76 @@ function RegisterForm() {
                 <span>College: <strong className="text-zinc-200">{formData.college}</strong></span>
                 <span>Branch: <strong className="text-zinc-200">{formData.branch}</strong></span>
                 <span>Year: <strong className="text-zinc-200">{formData.year}</strong></span>
+                <span>Pass Option: <strong className="text-purple-300">{isWithAccommodation ? 'With Accommodation (₹999)' : 'Without Accommodation (₹649)'}</strong></span>
               </div>
             </div>
 
-            {/* Coupon Code Box */}
-            <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.01] space-y-3">
-              <label htmlFor="coupon" className="block text-xs font-bold text-zinc-300 uppercase flex items-center gap-1.5">
-                <Tag className="h-3.5 w-3.5 text-purple-400" />
-                Apply College / Partner Coupon
-              </label>
+            {/* Coupon Code Box - ONLY displayed if With Accommodation */}
+            {isWithAccommodation ? (
+              <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.01] space-y-3">
+                <label htmlFor="coupon" className="block text-xs font-bold text-zinc-300 uppercase flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 text-purple-400" />
+                  Apply College / Partner Coupon
+                </label>
 
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
-                    <Ticket className="h-4 w-4" />
-                  </span>
-                  <input
-                    id="coupon"
-                    type="text"
-                    placeholder="e.g. JNTUH50, VNR20, MGIT100"
-                    value={couponCode}
-                    disabled={!!appliedCoupon || couponLoading}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs font-mono"
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                      <Ticket className="h-4 w-4" />
+                    </span>
+                    <input
+                      id="coupon"
+                      type="text"
+                      placeholder="e.g. JNTUH50, VNR20, MGIT100"
+                      value={couponCode}
+                      disabled={!!appliedCoupon || couponLoading}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-[#050514]/60 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 text-xs font-mono"
+                    />
+                  </div>
+
+                  {appliedCoupon ? (
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="px-5 py-2.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-40 flex items-center gap-1.5"
+                    >
+                      {couponLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      <span>Apply</span>
+                    </button>
+                  )}
                 </div>
 
-                {appliedCoupon ? (
-                  <button
-                    type="button"
-                    onClick={handleRemoveCoupon}
-                    className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                  >
-                    Remove
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    disabled={couponLoading || !couponCode.trim()}
-                    className="px-5 py-2.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-40 flex items-center gap-1.5"
-                  >
-                    {couponLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    <span>Apply</span>
-                  </button>
+                {couponSuccess && (
+                  <p className="text-xxs text-emerald-400 font-semibold pl-1 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>{couponSuccess}</span>
+                  </p>
+                )}
+                {couponError && (
+                  <p className="text-xxs text-rose-400 font-semibold pl-1">
+                    ✕ {couponError}
+                  </p>
                 )}
               </div>
-
-              {couponSuccess && (
-                <p className="text-xxs text-emerald-400 font-semibold pl-1 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  <span>{couponSuccess}</span>
-                </p>
-              )}
-              {couponError && (
-                <p className="text-xxs text-rose-400 font-semibold pl-1">
-                  ✕ {couponError}
-                </p>
-              )}
-            </div>
+            ) : null}
 
             {/* Price Breakdown Calculation */}
             <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.01] space-y-2.5 text-xs">
               <div className="flex justify-between text-zinc-400">
-                <span>Standard Individual Pass (2 Days)</span>
-                <span className="font-mono">₹1000</span>
+                <span>{isWithAccommodation ? 'Pass with Stay Accommodation (2 Days)' : 'Individual Standard Pass without Accommodation (2 Days)'}</span>
+                <span className="font-mono">₹{basePrice}</span>
               </div>
-              {appliedCoupon && (
+              {isWithAccommodation && appliedCoupon && (
                 <div className="flex justify-between text-emerald-400 font-semibold">
                   <span>Coupon Discount ({appliedCoupon.code})</span>
                   <span className="font-mono">-₹{appliedCoupon.discountAmount}</span>
@@ -1029,6 +1068,12 @@ function RegisterForm() {
                 <div className="flex justify-between">
                   <span className="text-zinc-500">College / Org</span>
                   <span className="font-medium text-zinc-200">{paidUser.college}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">Pass Type</span>
+                  <span className="font-medium text-purple-300 font-semibold">
+                    {(paidUser.accommodation === 'yes' || formData.accommodation === 'yes') ? 'With Accommodation (₹999)' : 'Without Accommodation (₹649)'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Date Issued</span>
