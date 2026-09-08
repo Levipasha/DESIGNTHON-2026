@@ -114,31 +114,50 @@ const SLIDESHOW_IMAGES = [
 ];
 
 export default function LandingPage() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [activeTimerTab, setActiveTimerTab] = useState<'registration' | 'event'>('registration');
+  const [regTimeLeft, setRegTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isClosed: false });
+  const [eventTimeLeft, setEventTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isStarted: false });
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
-  // Countdown timer logic targeting Sept 12, 2026 at 09:00 AM
+  // Countdown timer logic targeting Registration Deadline (10 Sept 2026 23:59:59 IST) & Event Start (12 Sept 2026 09:00:00 IST)
   useEffect(() => {
-    const targetDate = new Date('2026-09-12T09:00:00+05:30').getTime();
+    const regTargetDate = new Date('2026-09-10T23:59:59+05:30').getTime();
+    const eventTargetDate = new Date('2026-09-12T09:00:00+05:30').getTime();
 
-    const timer = setInterval(() => {
+    const updateTimers = () => {
       const now = new Date().getTime();
-      const difference = targetDate - now;
-
-      if (difference <= 0) {
-        clearInterval(timer);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
+      
+      // Registration countdown
+      const regDiff = regTargetDate - now;
+      if (regDiff <= 0) {
+        setRegTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isClosed: true });
+      } else {
+        setRegTimeLeft({
+          days: Math.floor(regDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((regDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((regDiff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((regDiff % (1000 * 60)) / 1000),
+          isClosed: false,
+        });
       }
 
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      // Event kickoff countdown
+      const eventDiff = eventTargetDate - now;
+      if (eventDiff <= 0) {
+        setEventTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isStarted: true });
+      } else {
+        setEventTimeLeft({
+          days: Math.floor(eventDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((eventDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((eventDiff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((eventDiff % (1000 * 60)) / 1000),
+          isStarted: false,
+        });
+      }
+    };
 
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
+    updateTimers();
+    const timer = setInterval(updateTimers, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -146,11 +165,13 @@ export default function LandingPage() {
     setFaqOpen(faqOpen === index ? null : index);
   };
 
+  const displayTime = activeTimerTab === 'registration' ? regTimeLeft : eventTimeLeft;
+
   return (
     <div className="flex-1 w-full bg-[#03030f] relative overflow-hidden bg-grid">
       {/* Decorative ambient glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-zinc-800/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-zinc-900/10 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-amber-600/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[120px] pointer-events-none" />
 
       {/* Hero Section with Vertical Marquee */}
       <section className="relative pt-20 pb-16 md:pt-28 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
@@ -159,9 +180,9 @@ export default function LandingPage() {
           {/* Left Column - Hero Content */}
           <div className="space-y-8 max-w-xl text-left">
             {/* Floating Tag */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-zinc-300 backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-              <span>2-Day Event: <strong className="text-white font-bold">Day 1 Workshop</strong> • <strong className="text-white font-bold">Day 2 UI/UX Hackathon</strong></span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md shadow-lg shadow-amber-950/30">
+              <Flame className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+              <span>🚨 <strong className="text-white font-bold">Registration Closes: 10 Sept 2026</strong> • <strong className="text-white font-bold">Workshop & Hackathon</strong></span>
             </div>
 
             {/* Hero Title */}
@@ -184,9 +205,9 @@ export default function LandingPage() {
             <div className="flex flex-wrap gap-4">
               <Link
                 href="/register"
-                className="group relative px-6 py-3.5 bg-gradient-to-r from-white to-zinc-200 hover:from-white hover:to-zinc-300 text-black rounded-xl font-bold text-xs overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-white/5 flex items-center gap-1.5 cursor-pointer"
+                className="group relative px-6 py-3.5 bg-gradient-to-r from-amber-400 via-amber-300 to-white hover:from-white hover:to-amber-300 text-black rounded-xl font-bold text-xs overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-amber-500/10 flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="relative z-10">REGISTER NOW</span>
+                <span className="relative z-10">REGISTER BEFORE 10 SEPT</span>
                 <ArrowRight className="h-4 w-4 relative z-10" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
               </Link>
@@ -201,25 +222,25 @@ export default function LandingPage() {
 
             {/* Event Quick Info Cards */}
             <div className="pt-8 border-t border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="group flex items-center gap-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all duration-300 hover:bg-white/[0.04] hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 text-left">
-                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
-                  <Calendar className="h-5 w-5" />
+              <div className="group flex items-center gap-3.5 bg-amber-500/[0.04] border border-amber-500/20 hover:border-amber-500/40 rounded-2xl p-4 transition-all duration-300 hover:bg-amber-500/[0.08] hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-950/20 text-left">
+                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-amber-500/10 text-amber-400 group-hover:text-amber-300 transition-colors flex-shrink-0">
+                  <Clock className="h-5 w-5 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Duration:</span>
-                  <span className="text-xs font-bold text-white">12–13 Sept '26</span>
-                  <span className="text-[9px] text-zinc-400 font-mono">2 Full Days</span>
+                  <span className="text-[10px] text-amber-400 uppercase tracking-wider font-bold">Reg. Deadline:</span>
+                  <span className="text-xs font-bold text-white">10 Sept 2026</span>
+                  <span className="text-[9px] text-amber-300/80 font-mono">11:59 PM (10D/09M)</span>
                 </div>
               </div>
 
               <div className="group flex items-center gap-3.5 bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all duration-300 hover:bg-white/[0.04] hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 text-left">
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/5 text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
-                  <MapPin className="h-5 w-5" />
+                  <Calendar className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Venue:</span>
-                  <span className="text-xs font-bold text-white">Cohort, Hyd</span>
-                  <span className="text-[9px] text-zinc-400 font-mono">In-Person</span>
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Event Days:</span>
+                  <span className="text-xs font-bold text-white">12–13 Sept '26</span>
+                  <span className="text-[9px] text-zinc-400 font-mono">2 Full Days</span>
                 </div>
               </div>
 
@@ -229,8 +250,8 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Access Pass:</span>
-                  <span className="text-xs font-bold text-white">Full Event Pass</span>
-                  <span className="text-[9px] text-emerald-400 font-mono">Workshop + Hackathon</span>
+                  <span className="text-xs font-bold text-white">Workshop + Hack</span>
+                  <span className="text-[9px] text-emerald-400 font-mono">Food & Certs Included</span>
                 </div>
               </div>
             </div>
@@ -268,18 +289,102 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Countdown Ticker Section */}
-      <section className="py-14 bg-white/[0.02] border-y border-white/5 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">Hacking Starts In</p>
-          <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto">
-            {Object.entries(timeLeft).map(([label, value]) => (
-              <div key={label} className="flex flex-col items-center p-3 rounded-xl bg-[#08081a]/60 border border-white/5 shadow-inner">
-                <span className="text-2xl sm:text-4xl font-extrabold text-white font-mono">{String(value).padStart(2, '0')}</span>
-                <span className="text-[10px] text-zinc-500 capitalize mt-1 font-semibold">{label}</span>
+      {/* Upgraded Countdown Ticker Section */}
+      <section className="py-16 bg-gradient-to-b from-amber-950/10 via-[#0a0718] to-white/[0.01] border-y border-amber-500/20 backdrop-blur-md relative overflow-hidden">
+        {/* Glow orb */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 blur-[100px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10 space-y-6">
+          
+          {/* Tab Switcher for Countdown */}
+          <div className="inline-flex items-center p-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
+            <button
+              onClick={() => setActiveTimerTab('registration')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTimerTab === 'registration'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>Registration Closes (10 Sept)</span>
+            </button>
+            <button
+              onClick={() => setActiveTimerTab('event')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTimerTab === 'event'
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-600/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Event Kickoff (12 Sept)</span>
+            </button>
+          </div>
+
+          {/* Title & Badge */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono font-bold mb-2">
+              <Clock className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '6s' }} />
+              <span>{activeTimerTab === 'registration' ? 'REGISTRATION DEADLINE: 10D/09M/2026 (11:59 PM IST)' : 'HACKATHON EVENT STARTS: 12 SEPT 2026 (09:00 AM IST)'}</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {activeTimerTab === 'registration' ? 'Registration Closes In' : 'DESIGNATHON Hacking Starts In'}
+            </h3>
+            <p className="text-zinc-400 text-xs sm:text-sm mt-1 max-w-md mx-auto">
+              {activeTimerTab === 'registration' 
+                ? 'Strict cutoff on September 10th, 2026. Late registrations will not be accepted once the clock hits zero.'
+                : 'Get ready for 2 action-packed days of workshop mastery and live UI/UX prototyping!'}
+            </p>
+          </div>
+
+          {/* Countdown Clock Grid */}
+          <div className="grid grid-cols-4 gap-3 sm:gap-6 max-w-xl mx-auto pt-2">
+            {[
+              { label: 'Days', value: displayTime.days },
+              { label: 'Hours', value: displayTime.hours },
+              { label: 'Minutes', value: displayTime.minutes },
+              { label: 'Seconds', value: displayTime.seconds },
+            ].map((item, idx) => (
+              <div
+                key={item.label}
+                className="relative group p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#110d24] to-[#060412] border border-amber-500/20 hover:border-amber-400/40 shadow-xl shadow-black/40 transition-all duration-300 hover:scale-105 flex flex-col items-center justify-center overflow-hidden"
+              >
+                {/* Top glow accent */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                
+                <span className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight group-hover:text-amber-300 transition-colors">
+                  {String(item.value).padStart(2, '0')}
+                </span>
+                <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-widest mt-1.5 font-bold">
+                  {item.label}
+                </span>
+
+                {/* Live pulsing dot on seconds */}
+                {item.label === 'Seconds' && (
+                  <div className="absolute top-2 right-2 flex items-center justify-center">
+                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping absolute" />
+                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
+
+          {/* Action CTA within Countdown */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-white text-black font-extrabold text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>REGISTER NOW BEFORE 10 SEPT CLOSES</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <span className="text-xs text-zinc-400 font-medium">
+              Limited seats • ₹649 Pass / ₹999 with Stay
+            </span>
+          </div>
+
         </div>
       </section>
 
@@ -759,23 +864,42 @@ export default function LandingPage() {
 
         <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-4 sm:before:left-1/2 before:w-[1px] before:bg-white/5">
           {[
-            { label: 'Registration Opens', date: 'Now Live (Open for All Students)' },
-            { label: 'Registration Closes', date: '10 September 2026' },
-            { label: 'Team Formation Closes', date: '11 September 2026' },
-            { label: 'Day 1 • UI/UX Design Workshop', date: '12 September (09:00 AM – Full Day)' },
-            { label: 'Day 2 • Live UI/UX Hackathon Sprint', date: '13 September (09:00 AM – 04:00 PM)' },
-            { label: 'Day 2 • Final Demos & Grand Awards', date: '13 September (04:30 PM – Evening)' },
+            { label: 'Registration Opens', date: 'Now Live (Open for All Students)', highlight: false },
+            { label: 'Registration Closes (Strict Deadline)', date: '10 September 2026 • 11:59 PM IST (10D/09M/2026)', highlight: true, tag: 'CLOSING DEADLINE' },
+            { label: 'Team Formation Closes', date: '11 September 2026', highlight: false },
+            { label: 'Day 1 • UI/UX Design Workshop', date: '12 September (09:00 AM – Full Day)', highlight: false },
+            { label: 'Day 2 • Live UI/UX Hackathon Sprint', date: '13 September (09:00 AM – 04:00 PM)', highlight: false },
+            { label: 'Day 2 • Final Demos & Grand Awards', date: '13 September (04:30 PM – Evening)', highlight: false },
           ].map((item, idx) => {
             const isEven = idx % 2 === 0;
             return (
               <div key={idx} className={`flex flex-col sm:flex-row items-start relative ${isEven ? 'sm:flex-row-reverse' : ''}`}>
                 {/* timeline node dot */}
-                <div className="absolute left-4 sm:left-1/2 transform -translate-x-[50%] top-1 h-3.5 w-3.5 rounded-full border border-white bg-[#03030f] z-10" />
+                <div className={`absolute left-4 sm:left-1/2 transform -translate-x-[50%] top-1 h-3.5 w-3.5 rounded-full z-10 ${
+                  item.highlight
+                    ? 'border-2 border-amber-400 bg-amber-500 shadow-lg shadow-amber-500/50 animate-pulse'
+                    : 'border border-white bg-[#03030f]'
+                }`} />
                 
                 <div className="w-full sm:w-[45%] pl-10 sm:pl-0 sm:px-6 text-left sm:text-right">
-                  <div className={`p-4 rounded-xl glass-panel border-white/5 flex flex-col justify-center text-left hover:border-white/20 transition-all`}>
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">{item.label}</span>
-                    <span className="text-xs font-semibold text-white mt-1">{item.date}</span>
+                  <div className={`p-4 rounded-xl flex flex-col justify-center text-left transition-all ${
+                    item.highlight
+                      ? 'glass-panel border-amber-500/40 bg-amber-500/[0.06] shadow-lg shadow-amber-950/30 ring-1 ring-amber-400/30'
+                      : 'glass-panel border-white/5 hover:border-white/20'
+                  }`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-[10px] uppercase font-bold tracking-wider ${item.highlight ? 'text-amber-300' : 'text-zinc-500'}`}>
+                        {item.label}
+                      </span>
+                      {item.tag && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider">
+                          {item.tag}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-xs font-semibold mt-1 ${item.highlight ? 'text-white font-bold' : 'text-white'}`}>
+                      {item.date}
+                    </span>
                   </div>
                 </div>
               </div>

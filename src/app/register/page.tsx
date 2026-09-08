@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Sparkles, User, Mail, Phone, School, BookOpen, Calendar, 
   Globe, Ticket, CreditCard, CheckCircle2, ShieldAlert, 
-  Download, ArrowRight, ArrowLeft, RefreshCw, Check, Loader2, Tag, Building2
+  Download, ArrowRight, ArrowLeft, RefreshCw, Check, Loader2, Tag, Building2,
+  Clock, Flame, AlertCircle
 } from 'lucide-react';
 
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -69,6 +70,31 @@ function RegisterForm() {
   // Payment Confirmation / Receipt details
   const [paidUser, setPaidUser] = useState<any>(null);
   const [receiptDetails, setReceiptDetails] = useState<any>(null);
+
+  // Registration Deadline Countdown (10 September 2026, 23:59:59 IST)
+  const [deadlineTimeLeft, setDeadlineTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isClosed: false });
+
+  useEffect(() => {
+    const target = new Date('2026-09-10T23:59:59+05:30').getTime();
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const diff = target - now;
+      if (diff <= 0) {
+        setDeadlineTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isClosed: true });
+      } else {
+        setDeadlineTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((diff % (1000 * 60)) / 1000),
+          isClosed: false
+        });
+      }
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Sync user state on load or login
   useEffect(() => {
@@ -569,6 +595,38 @@ function RegisterForm() {
         {/* ========================================================================= */}
         {currentPhase === 'details' && (
           <>
+            {/* Registration Deadline Urgent Timer Card */}
+            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#130b29]/60 to-amber-950/40 border border-amber-500/30 text-left relative overflow-hidden shadow-lg shadow-black/40">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+              
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                      ⚡ REGISTRATION CLOSES: 10 SEPT 2026 (10D/09M/2026)
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white">
+                    {deadlineTimeLeft.isClosed ? 'Registration has officially closed.' : 'Time Remaining to Register & Lock Pass:'}
+                  </h4>
+                </div>
+
+                {!deadlineTimeLeft.isClosed && (
+                  <div className="flex items-center gap-1.5 font-mono bg-black/60 px-3 py-1.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-bold shadow-inner">
+                    <Clock className="w-3.5 h-3.5 text-amber-400 mr-1" />
+                    <span>{String(deadlineTimeLeft.days).padStart(2, '0')}d</span>
+                    <span className="text-amber-500">:</span>
+                    <span>{String(deadlineTimeLeft.hours).padStart(2, '0')}h</span>
+                    <span className="text-amber-500">:</span>
+                    <span>{String(deadlineTimeLeft.minutes).padStart(2, '0')}m</span>
+                    <span className="text-amber-500">:</span>
+                    <span className="text-white animate-pulse">{String(deadlineTimeLeft.seconds).padStart(2, '0')}s</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-zinc-300 backdrop-blur-md mb-2.5">
                 <Sparkles className="h-3 w-3 text-amber-400" />

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { Bell, Menu, X, LogOut, LayoutDashboard, Settings, User as UserIcon, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import RegistrationDeadlineBanner from './RegistrationDeadlineBanner';
 
 interface DBNotification {
   id: string;
@@ -193,7 +194,8 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#03030f]/60 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#03030f]/80 backdrop-blur-md">
+      <RegistrationDeadlineBanner />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           
